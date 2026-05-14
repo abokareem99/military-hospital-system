@@ -10,7 +10,7 @@
         
         /* شاشة القفل المحسنة */
         #lockScreen { background: #ffffff; padding: 40px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border-top: 8px solid #1e3a8a; }
-        .logo { width: 100px; height: auto; margin-bottom: 15px; }
+        .logo { width: 120px; height: auto; margin-bottom: 15px; } /* تم زيادة العرض قليلاً للوضوح */
         .header-title { color: #1e3a8a; margin: 0; font-size: 18px; font-weight: bold; }
         .header-sub { color: #64748b; margin: 5px 0 25px 0; font-size: 14px; }
         
@@ -34,7 +34,7 @@
 <body>
 
 <div id="lockScreen">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Emblem_of_Sudan.svg/500px-Emblem_of_Sudan.svg.png" class="logo" alt="صقر الجديان">
+    <img src="logo.png" class="logo" alt="شعار السلاح الطبي">
     <p class="header-title">مستشفى السلاح الطبي بورتسودان</p>
     <p class="header-sub">قسم النفسية - نظام الوصول الآمن</p>
     
@@ -46,7 +46,7 @@
 <div id="mainContent">
     <div style="max-width: 1000px; margin: auto;">
         <div class="official-header">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Emblem_of_Sudan.svg/500px-Emblem_of_Sudan.svg.png" style="width: 60px;" alt="شعار">
+            <img src="logo.png" style="width: 80px;" alt="شعار">
             <h2 style="margin: 10px 0 5px 0; color: #1e3a8a;">مستشفى السلاح الطبي بورتسودان</h2>
             <h4 style="margin: 0; color: #64748b;">سجل حالات قسم النفسية</h4>
         </div>
@@ -81,7 +81,7 @@
 </div>
 
 <script>
-    const SECRET_PASS = "Ateya2026"; // كلمة المرور الخاصة بك
+    const SECRET_PASS = "Ateya2026"; 
 
     function checkPass() {
         const input = document.getElementById('passInput').value;
