@@ -5,24 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إضافة حالة - السلاح الطبي</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 15px; }
-        .container { max-width: 450px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: #1e3a8a; text-align: center; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
-        .form-group { margin-bottom: 15px; }
+        body { font-family: 'Cairo', sans-serif; background-color: #f1f5f9; padding: 15px; }
+        .container { max-width: 450px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 8px solid #1e3a8a; }
+        .header-section { text-align: center; margin-bottom: 20px; }
+        .logo { width: 80px; height: auto; margin-bottom: 10px; }
+        h2 { color: #1e3a8a; margin: 0; font-size: 20px; }
+        .form-group { margin-bottom: 15px; text-align: right; }
         label { display: block; font-weight: bold; margin-bottom: 5px; color: #374151; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 15px; background-color: #2563eb; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background-color: #1d4ed8; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-size: 16px; font-family: 'Cairo'; }
+        button { width: 100%; padding: 15px; background-color: #1e3a8a; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        button:hover { background-color: #1e40af; }
         #statusMsg { text-align: center; margin-top: 15px; font-weight: bold; }
-        .footer-links { text-align: center; margin-top: 20px; }
-        .footer-links a { text-decoration: none; color: #6b7280; margin: 0 10px; font-size: 14px; }
+        .footer-links { text-align: center; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+        .footer-links a { text-decoration: none; color: #1e3a8a; margin: 0 10px; font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>تسجيل مريض جديد</h2>
+    <div class="header-section">
+        <img src="logo.png___.png" class="logo" alt="شعار السلاح الطبي">
+        <h2>تسجيل مريض جديد</h2>
+        <p style="color: #64748b; font-size: 12px; margin: 5px 0;">قسم النفسية - بورتسودان</p>
+    </div>
     
     <div class="form-group">
         <label>كود المريض:</label>
@@ -45,18 +52,17 @@
         <textarea id="p_notes" rows="4" placeholder="اكتب التشخيص التفصيلي هنا..."></textarea>
     </div>
 
-    <button id="saveBtn">حفظ البيانات</button>
+    <button id="saveBtn">حفظ البيانات بالمنظومة</button>
     
     <div id="statusMsg"></div>
 
     <div class="footer-links">
-        <a href="index.html">الرئيسية</a> | 
-        <a href="view-patients.html">عرض سجل المرضى</a>
+        <a href="index.html">🏠 الرئيسية</a> | 
+        <a href="view-patients.html">📋 سجل المرضى</a>
     </div>
 </div>
 
 <script>
-    // بيانات الربط الخاصة بمشروع STPG
     const S_URL = 'https://kqauubmsyrvsqtcqjfch.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYXV1Ym1zeXJ2c3F0Y3FqZmNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NDI3NDMsImV4cCI6MjA5MzUxODc0M30.jDJb85oG4PZlwo7hwzsNtBbn9TqjQDxjPedxu4wApCc';
     const _supabase = supabase.createClient(S_URL, S_KEY);
@@ -73,7 +79,7 @@
             return;
         }
 
-        msg.innerText = "جاري الحفظ...";
+        msg.innerText = "جاري الحفظ بالمكتب التقني...";
         msg.style.color = "blue";
 
         const { error } = await _supabase
@@ -84,9 +90,8 @@
             msg.innerText = "❌ خطأ في الحفظ: " + error.message;
             msg.style.color = "red";
         } else {
-            msg.innerText = "✅ تم حفظ الحالة بنجاح!";
+            msg.innerText = "✅ تم الحفظ بنجاح في السجل العسكري";
             msg.style.color = "green";
-            // تفريغ الحقول بعد النجاح
             document.getElementById('p_code').value = '';
             document.getElementById('p_notes').value = '';
         }
