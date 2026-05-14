@@ -3,51 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دخول آمن - السلاح الطبي</title>
+    <title>نظام سجلات السلاح الطبي</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #1e293b; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #0f172a; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
         
-        /* شاشة القفل */
-        #lockScreen { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); width: 90%; max-width: 400px; text-align: center; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .logo { width: 120px; margin-bottom: 20px; }
-        h3 { margin-bottom: 25px; font-weight: 300; }
-        input[type="password"] { width: 100%; padding: 12px; border-radius: 10px; border: none; margin-bottom: 20px; text-align: center; font-size: 18px; box-sizing: border-box; }
-        .btn-login { width: 100%; padding: 12px; background: #10b981; border: none; color: white; border-radius: 10px; font-size: 18px; cursor: pointer; transition: 0.3s; }
-        .btn-login:hover { background: #059669; }
-
-        /* محتوى السجل (مخفي في البداية) */
-        #mainContent { display: none; background: #f8f9fa; width: 100%; min-height: 100vh; padding: 20px; box-sizing: border-box; color: #333; }
+        /* شاشة القفل المحسنة */
+        #lockScreen { background: #ffffff; padding: 40px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border-top: 8px solid #1e3a8a; }
+        .logo { width: 100px; height: auto; margin-bottom: 15px; }
+        .header-title { color: #1e3a8a; margin: 0; font-size: 18px; font-weight: bold; }
+        .header-sub { color: #64748b; margin: 5px 0 25px 0; font-size: 14px; }
+        
+        input[type="password"] { width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #e2e8f0; margin-bottom: 20px; text-align: center; font-size: 18px; outline: none; transition: 0.3s; }
+        input[type="password"]:focus { border-color: #1e3a8a; }
+        .btn-login { width: 100%; padding: 14px; background: #1e3a8a; border: none; color: white; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        
+        /* المحتوى الرئيسي */
+        #mainContent { display: none; background: #f1f5f9; width: 100%; min-height: 100vh; padding: 20px; color: #1e293b; }
+        .official-header { text-align: center; margin-bottom: 30px; border-bottom: 2px double #1e3a8a; padding-bottom: 15px; }
         .stats-grid { display: flex; gap: 15px; margin-bottom: 25px; }
         .stat-card { flex: 1; padding: 15px; border-radius: 12px; color: white; text-align: center; }
-        .stat-blue { background: #2563eb; }
-        .stat-green { background: #10b981; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        th, td { padding: 12px; border: 1px solid #eee; text-align: right; }
-        th { background: #2563eb; color: white; }
+        .stat-blue { background: #1e3a8a; }
+        .stat-green { background: #059669; }
+        
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        th, td { padding: 12px; border: 1px solid #edf2f7; text-align: right; }
+        th { background: #1e3a8a; color: white; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div id="lockScreen">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Emblem_of_Sudan.svg/1200px-Emblem_of_Sudan.svg.png" class="logo" alt="صقر الجديان">
-    <h3>الوصول آمن - السلاح الطبي</h3>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Emblem_of_Sudan.svg/500px-Emblem_of_Sudan.svg.png" class="logo" alt="صقر الجديان">
+    <p class="header-title">مستشفى السلاح الطبي بورتسودان</p>
+    <p class="header-sub">قسم النفسية - نظام الوصول الآمن</p>
+    
     <input type="password" id="passInput" placeholder="أدخل كلمة المرور">
-    <button class="btn-login" onclick="checkPass()">فتح سجل المرضى</button>
-    <p id="errMsg" style="color: #ff8080; margin-top: 10px; font-size: 14px; display: none;">كلمة المرور غير صحيحة!</p>
+    <button class="btn-login" onclick="checkPass()">فتح السجل</button>
+    <p id="errMsg" style="color: #ef4444; margin-top: 10px; font-size: 13px; display: none;">خطأ في كلمة المرور، حاول مرة أخرى</p>
 </div>
 
 <div id="mainContent">
-    <div style="max-width: 900px; margin: auto;">
-        <h2 style="text-align: center; color: #1e293b;">سجل الحالات - قسم النفسية</h2>
+    <div style="max-width: 1000px; margin: auto;">
+        <div class="official-header">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Emblem_of_Sudan.svg/500px-Emblem_of_Sudan.svg.png" style="width: 60px;" alt="شعار">
+            <h2 style="margin: 10px 0 5px 0; color: #1e3a8a;">مستشفى السلاح الطبي بورتسودان</h2>
+            <h4 style="margin: 0; color: #64748b;">سجل حالات قسم النفسية</h4>
+        </div>
         
         <div class="stats-grid">
             <div class="stat-card stat-blue">
-                <div>إجمالي الحالات</div>
+                <div style="font-size: 13px; opacity: 0.9;">إجمالي الحالات المسجلة</div>
                 <div id="totalPatients" style="font-size: 24px; font-weight: bold;">0</div>
             </div>
             <div class="stat-card stat-green">
-                <div>أكثر حالة تكراراً</div>
+                <div style="font-size: 13px; opacity: 0.9;">التشخيص الأكثر تكراراً</div>
                 <div id="topDiagnosis" style="font-size: 18px; font-weight: bold;">-</div>
             </div>
         </div>
@@ -56,33 +66,35 @@
             <thead>
                 <tr>
                     <th>كود المريض</th>
-                    <th>التشخيص</th>
-                    <th>الملاحظات</th>
-                    <th>التاريخ</th>
+                    <th>التشخيص المبدئي</th>
+                    <th>ملاحظات الطبيب</th>
+                    <th>تاريخ التسجيل</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
         </table>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="add-patient.html" style="text-decoration: none; color: #1e3a8a; font-weight: bold;">+ إضافة حالة جديدة</a>
+        </div>
     </div>
 </div>
 
 <script>
-    // كلمة المرور (يمكنك تغييرها هنا)
-    const SECRET_PASS = "Ateya2026"; 
+    const SECRET_PASS = "Ateya2026"; // كلمة المرور الخاصة بك
 
     function checkPass() {
         const input = document.getElementById('passInput').value;
         if (input === SECRET_PASS) {
             document.getElementById('lockScreen').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
-            document.body.style.backgroundColor = "#f8f9fa";
+            document.body.style.backgroundColor = "#f1f5f9";
             loadPatients();
         } else {
             document.getElementById('errMsg').style.display = 'block';
         }
     }
 
-    // كود الربط مع Supabase (نفس بياناتك السابقة)
     const S_URL = 'https://kqauubmsyrvsqtcqjfch.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYXV1Ym1zeXJ2c3F0Y3FqZmNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NDI3NDMsImV4cCI6MjA5MzUxODc0M30.jDJb85oG4PZlwo7hwzsNtBbn9TqjQDxjPedxu4wApCc';
     const _supabase = supabase.createClient(S_URL, S_KEY);
@@ -115,5 +127,6 @@
         }
     }
 </script>
+
 </body>
 </html>
