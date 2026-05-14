@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إضافة حالة - السلاح الطبي</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 15px; }
+        .container { max-width: 450px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #1e3a8a; text-align: center; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #374151; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 15px; background-color: #2563eb; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background-color: #1d4ed8; }
+        #statusMsg { text-align: center; margin-top: 15px; font-weight: bold; }
+        .footer-links { text-align: center; margin-top: 20px; }
+        .footer-links a { text-decoration: none; color: #6b7280; margin: 0 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>تسجيل مريض جديد</h2>
+    
+    <div class="form-group">
+        <label>كود المريض:</label>
+        <input type="text" id="p_code" placeholder="مثلاً: PSY-2026">
+    </div>
+
+    <div class="form-group">
+        <label>الحالة النفسية:</label>
+        <select id="p_diagnosis">
+            <option value="اكتئاب">اكتئاب</option>
+            <option value="قلق حاد">قلق حاد</option>
+            <option value="اضطراب صدمة">اضطراب ما بعد الصدمة</option>
+            <option value="فصام">فصام</option>
+            <option value="أخرى">أخرى</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>ملاحظات الطبيب المختص:</label>
+        <textarea id="p_notes" rows="4" placeholder="اكتب التشخيص التفصيلي هنا..."></textarea>
+    </div>
+
+    <button id="saveBtn">حفظ البيانات</button>
+    
+    <div id="statusMsg"></div>
+
+    <div class="footer-links">
+        <a href="index.html">الرئيسية</a> | 
+        <a href="view-patients.html">عرض سجل المرضى</a>
+    </div>
+</div>
+
+<script>
+    // بيانات الربط الخاصة بمشروع STPG
+    const S_URL = 'https://kqauubmsyrvsqtcqjfch.supabase.co';
+    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYXV1Ym1zeXJ2c3F0Y3FqZmNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NDI3NDMsImV4cCI6MjA5MzUxODc0M30.jDJb85oG4PZlwo7hwzsNtBbn9TqjQDxjPedxu4wApCc';
+    const _supabase = supabase.createClient(S_URL, S_KEY);
+
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+        const code = document.getElementById('p_code').value;
+        const diagnosis = document.getElementById('p_diagnosis').value;
+        const notes = document.getElementById('p_notes').value;
+        const msg = document.getElementById('statusMsg');
+
+        if(!code) {
+            msg.innerText = "⚠️ يرجى إدخال كود المريض";
+            msg.style.color = "orange";
+            return;
+        }
+
+        msg.innerText = "جاري الحفظ...";
+        msg.style.color = "blue";
+
+        const { error } = await _supabase
+            .from('hospital_patients')
+            .insert([{ patient_code: code, diagnosis: diagnosis, notes: notes }]);
+
+        if (error) {
+            msg.innerText = "❌ خطأ في الحفظ: " + error.message;
+            msg.style.color = "red";
+        } else {
+            msg.innerText = "✅ تم حفظ الحالة بنجاح!";
+            msg.style.color = "green";
+            // تفريغ الحقول بعد النجاح
+            document.getElementById('p_code').value = '';
+            document.getElementById('p_notes').value = '';
+        }
+    });
+</script>
+
+</body>
+</html>
