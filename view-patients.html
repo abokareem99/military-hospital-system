@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سجل المرضى - السلاح الطبي</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; text-align: center; border-bottom: 3px solid #007bff; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #dee2e6; text-align: right; }
+        th { background-color: #007bff; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .btn-back { display: inline-block; margin-bottom: 20px; padding: 10px 15px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html" class="btn-back">⬅ العودة للرئيسية</a>
+    <h2>سجل الحالات المرضية - قسم النفسية</h2>
+    
+    <div id="loading" style="text-align:center;">جاري تحميل البيانات...</div>
+    
+    <table id="patientsTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>كود المريض</th>
+                <th>التشخيص</th>
+                <th>الملاحظات</th>
+                <th>التاريخ</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            </tbody>
+    </table>
+</div>
+
+<script>
+    // إعدادات مشروع STPG
+    const S_URL = 'https://kqauubmsyrvsqtcqjfch.supabase.co';
+    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYXV1Ym1zeXJ2c3F0Y3FqZmNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NDI3NDMsImV4cCI6MjA5MzUxODc0M30.jDJb85oG4PZlwo7hwzsNtBbn9TqjQDxjPedxu4wApCc';
+    const _supabase = supabase.createClient(S_URL, S_KEY);
+
+    async function loadPatients() {
+        const { data, error } = await _supabase
+            .from('hospital_patients')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error("Error:", error);
+            document.getElementById('loading').innerText = "حدث خطأ أثناء جلب البيانات.";
+        } else {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('patientsTable').style.display = 'table';
+            
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            data.forEach(p => {
+                const row = `<tr>
+                    <td>${p.patient_code}</td>
+                    <td>${p.diagnosis}</td>
+                    <td>${p.notes || '-'}</td>
+                    <td>${new Date(p.created_at).toLocaleDateString('ar-EG')}</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+    }
+
+    loadPatients();
+</script>
+
+</body>
+</html>
