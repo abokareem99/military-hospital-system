@@ -1,25 +1,111 @@
-<div style="display: flex; gap: 15px; margin-bottom: 20px; justify-content: center;">
-    <div style="background: #2563eb; color: white; padding: 15px; border-radius: 10px; text-align: center; flex: 1;">
-        <div style="font-size: 14px;">إجمالي الحالات</div>
-        <div id="totalPatients" style="font-size: 24px; font-weight: bold;">0</div>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سجل المرضى - السلاح الطبي</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 15px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; text-align: center; border-bottom: 3px solid #007bff; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        /* تصميم لوحة الإحصائيات */
+        .stats-grid { display: flex; gap: 15px; margin-bottom: 25px; justify-content: center; }
+        .stat-card { flex: 1; padding: 20px; border-radius: 12px; text-align: center; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .stat-blue { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+        .stat-green { background: linear-gradient(135deg, #10b981, #059669); }
+        .stat-label { font-size: 14px; opacity: 0.9; margin-bottom: 5px; }
+        .stat-value { font-size: 26px; font-weight: bold; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { padding: 12px; border: 1px solid #dee2e6; text-align: right; }
+        th { background-color: #007bff; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .btn-back { display: inline-block; margin-bottom: 20px; padding: 10px 15px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px; font-size: 14px; }
+        
+        @media (max-width: 600px) {
+            .stats-grid { flex-direction: column; }
+            table { font-size: 12px; }
+            th, td { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html" class="btn-back">⬅ العودة للرئيسية</a>
+    <h2>سجل الحالات - قسم النفسية</h2>
+
+    <div class="stats-grid">
+        <div class="stat-card stat-blue">
+            <div class="stat-label">إجمالي الحالات المسجلة</div>
+            <div id="totalPatients" class="stat-value">0</div>
+        </div>
+        <div class="stat-card stat-green">
+            <div class="stat-label">أكثر حالة تكراراً</div>
+            <div id="topDiagnosis" class="stat-value">-</div>
+        </div>
     </div>
-    <div style="background: #10b981; color: white; padding: 15px; border-radius: 10px; text-align: center; flex: 1;">
-        <div style="font-size: 14px;">أكثر تشخيص تكراراً</div>
-        <div id="topDiagnosis" style="font-size: 18px; font-weight: bold;">-</div>
-    </div>
+    
+    <div id="loading" style="text-align:center;">جاري جلب البيانات من STPG...</div>
+    
+    <table id="patientsTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>كود المريض</th>
+                <th>التشخيص</th>
+                <th>الملاحظات</th>
+                <th>التاريخ</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
 </div>
 
 <script>
-    // أضف هذا الجزء داخل وظيفة loadPatients بعد جلب البيانات (Data)
-    function updateStats(data) {
-        document.getElementById('totalPatients').innerText = data.length;
-        
-        if(data.length > 0) {
-            const counts = {};
-            data.forEach(p => { counts[p.diagnosis] = (counts[p.diagnosis] || 0) + 1; });
-            const top = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
-            document.getElementById('topDiagnosis').innerText = top;
+    const S_URL = 'https://kqauubmsyrvsqtcqjfch.supabase.co';
+    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYXV1Ym1zeXJ2c3F0Y3FqZmNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NDI3NDMsImV4cCI6MjA5MzUxODc0M30.jDJb85oG4PZlwo7hwzsNtBbn9TqjQDxjPedxu4wApCc';
+    const _supabase = supabase.createClient(S_URL, S_KEY);
+
+    async function loadPatients() {
+        const { data, error } = await _supabase
+            .from('psychiatry_patients')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            document.getElementById('loading').innerText = "خطأ في الاتصال بقاعدة البيانات.";
+        } else {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('patientsTable').style.display = 'table';
+            
+            // تحديث الإحصائيات
+            document.getElementById('totalPatients').innerText = data.length;
+            if(data.length > 0) {
+                const counts = {};
+                data.forEach(p => { counts[p.diagnosis] = (counts[p.diagnosis] || 0) + 1; });
+                const top = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+                document.getElementById('topDiagnosis').innerText = top;
+            }
+
+            // عرض الجدول
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            data.forEach(p => {
+                const row = `<tr>
+                    <td><b>${p.patient_code}</b></td>
+                    <td>${p.diagnosis}</td>
+                    <td>${p.notes || '-'}</td>
+                    <td>${new Date(p.created_at).toLocaleDateString('ar-EG')}</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
         }
     }
-    // تذكر استدعاء updateStats(data) داخل الـ Else الخاصة بجلب البيانات
+
+    loadPatients();
 </script>
+
+</body>
+</html>
