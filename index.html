@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدخال بيانات - قسم النفسية</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; padding: 20px; }
+        .container { max-width: 600px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: auto; }
+        h2 { color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #34495e; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #dcdfe6; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        button:hover { background-color: #219150; }
+        #msg { margin-top: 15px; text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>تسجيل حالة جديدة - المستشفى العسكري</h2>
+    <form id="patientForm">
+        <div class="form-group">
+            <label>كود المريض (للحفاظ على السرية):</label>
+            <input type="text" id="patient_code" placeholder="مثلاً: P-2026-001" required>
+        </div>
+        <div class="form-group">
+            <label>الحالة التشخيصية الأولية:</label>
+            <select id="diagnosis">
+                <option value="اضطراب قلق">اضطراب قلق</option>
+                <option value="اكتئاب">اكتئاب</option>
+                <option value="اضطراب ما بعد الصدمة">اضطراب ما بعد الصدمة</option>
+                <option value="أخرى">أخرى</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>ملاحظات الطبيب المعالج:</label>
+            <textarea id="notes" rows="4" placeholder="اكتب الملاحظات هنا..."></textarea>
+        </div>
+        <button type="submit" id="saveBtn">حفظ البيانات في النظام</button>
+    </form>
+    <div id="msg"></div>
+</div>
+
+<script>
+    // إعدادات الربط (استخدمنا المفتاح المصحح الذي يبدأ بـ e صغير)
+    const S_URL = 'https://kqauubmsyrvsqtcqjfch.supabase.co'; 
+    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYXV1Ym1zeXJ2c3F0Y3FqZmNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NDI3NDMsImV4cCI6MjA5MzUxODc0M30.jDJb85oG4PZlwo7hwzsNtBbn9TqjQDxjPedxu4wApCc';
+    const _supabase = supabase.createClient(S_URL, S_KEY);
+
+    document.getElementById('patientForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('saveBtn');
+        const msg = document.getElementById('msg');
+        
+        btn.disabled = true;
+        btn.innerText = "جاري الحفظ...";
+
+        const dataToSave = {
+            patient_code: document.getElementById('patient_code').value,
+            diagnosis: document.getElementById('diagnosis').value,
+            notes: document.getElementById('notes').value,
+            created_at: new Date()
+        };
+
+        // محاولة الحفظ في جدول اسمه 'psychiatry_patients' (تأكد من إنشائه في Supabase)
+        const { error } = await _supabase.from('psychiatry_patients').insert([dataToSave]);
+
+        if (error) {
+            msg.innerHTML = "❌ خطأ في الحفظ: " + error.message;
+            msg.style.color = "red";
+        } else {
+            msg.innerHTML = "✅ تم حفظ الحالة بنجاح في سجلات المستشفى.";
+            msg.style.color = "green";
+            document.getElementById('patientForm').reset();
+        }
+        btn.disabled = false;
+        btn.innerText = "حفظ البيانات في النظام";
+    });
+</script>
+
+</body>
+</html>
