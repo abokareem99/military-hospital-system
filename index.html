@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>دخول - منظومة السلاح الطبي</title>
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #1e3a8a; --dark: #0f172a; }
         body { font-family: 'Cairo', sans-serif; background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%); display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; color: #fff; }
         .login-card { max-width: 400px; width: 90%; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; border-top: 10px solid var(--primary); }
-        .logo { width: 100px; margin-bottom: 20px; }
+        .logo { width: 100px; margin-bottom: 20px; border-radius: 50%; }
         h2 { color: var(--dark); margin: 0 0 10px 0; }
         .badge { background: #f1f5f9; color: var(--primary); padding: 8px 15px; border-radius: 50px; font-weight: bold; font-size: 13px; display: inline-block; margin-bottom: 25px; }
         input { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 18px; text-align: center; box-sizing: border-box; font-family: 'Cairo'; }
@@ -21,7 +24,7 @@
 </head>
 <body>
     <div class="login-card">
-        <img src="logo.png" class="logo" alt="شعار">
+        <img src="icon-192.png" class="logo" alt="شعار صقر الجديان">
         <h2>المكتب التقني</h2>
         <div class="badge">المستشفى العسكري - بورتسودان</div>
         <input type="password" id="passInput" placeholder="أدخل كلمة المرور">
