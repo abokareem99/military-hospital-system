@@ -12,25 +12,22 @@
         #mainContent { display: none; width: 100%; background: #f1f5f9; padding: 20px; }
         .stats { display: flex; gap: 15px; margin-bottom: 20px; max-width: 1000px; margin-inline: auto; }
         .stat-card { flex: 1; background: white; padding: 20px; border-radius: 15px; text-align: center; border-bottom: 5px solid #1e3a8a; }
-        table { width: 100%; max-width: 1000px; margin: auto; border-collapse: collapse; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        table { width: 100%; max-width: 1000px; margin: auto; border-collapse: collapse; background: white; border-radius: 15px; overflow: hidden; }
         th { background: #1e3a8a; color: white; padding: 15px; text-align: right; }
         td { padding: 15px; border-bottom: 1px solid #f1f5f9; }
         .badge { padding: 4px 10px; border-radius: 5px; color: white; font-size: 12px; font-weight: bold; }
-        .btn-print { background: #059669; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; margin-bottom: 20px; }
-        @media print { .no-print { display: none; } }
     </style>
 </head>
 <body>
     <div id="lockScreen">
-        <img src="logo.png" width="80" alt="logo"><br><br>
-        <input type="password" id="adminPass" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd; text-align:center;" placeholder="كلمة مرور السجلات">
+        <h2 style="color:#1e3a8a">سجل الدخول</h2>
+        <input type="password" id="adminPass" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd; text-align:center;" placeholder="كلمة المرور">
         <button onclick="unlock()" style="width:100%; padding:12px; background:#1e3a8a; color:white; border:none; border-radius:8px; cursor:pointer;">فتح السجل</button>
     </div>
 
     <div id="mainContent">
         <div style="max-width:1000px; margin:auto; text-align:center;">
-            <h2 style="color:#1e3a8a">سجل الحالات الرسمي - السلاح الطبي</h2>
-            <button class="btn-print no-print" onclick="window.print()">🖨️ طباعة التقرير</button>
+            <h2 style="color:#1e3a8a">سجل حالات قسم النفسية</h2>
             <div class="stats">
                 <div class="stat-card"><h3>إجمالي الحالات</h3><div id="total" style="font-size:24px; font-weight:bold; color:#1e3a8a">0</div></div>
                 <div class="stat-card"><h3>الأكثر شيوعاً</h3><div id="common" style="font-size:18px; font-weight:bold; color:#059669">-</div></div>
@@ -41,7 +38,7 @@
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
-            <div style="margin-top:20px;" class="no-print">
+            <div style="margin-top:20px;">
                 <a href="add-patient.html" style="color:#1e3a8a; font-weight:bold; text-decoration:none;">➕ إضافة حالة جديدة</a>
             </div>
         </div>
@@ -58,11 +55,12 @@
                 document.getElementById('mainContent').style.display = 'block';
                 document.body.style.background = "#f1f5f9";
                 loadData();
-            } else { alert("خطأ!"); }
+            } else { alert("كلمة المرور خاطئة!"); }
         }
 
         async function loadData() {
-            const { data, error } = await _supabase.from('hospital_patients').select('*').order('created_at', { ascending: false });
+            // تم تعديل الاسم هنا ليطابق psychiatry_patients
+            const { data, error } = await _supabase.from('psychiatry_patients').select('*').order('created_at', { ascending: false });
             if(data) {
                 document.getElementById('total').innerText = data.length;
                 const tbody = document.getElementById('tableBody');
@@ -70,11 +68,10 @@
                 const counts = {};
                 data.forEach(p => {
                     counts[p.diagnosis] = (counts[p.diagnosis] || 0) + 1;
-                    let color = p.diagnosis === 'فصام' ? '#dc2626' : '#1e3a8a';
                     tbody.innerHTML += `<tr>
                         <td><b>${p.patient_code}</b></td>
-                        <td><span class="badge" style="background:${color}">${p.diagnosis}</span></td>
-                        <td style="font-size:13px">${p.notes || '-'}</td>
+                        <td><span class="badge" style="background:#1e3a8a">${p.diagnosis}</span></td>
+                        <td>${p.notes || '-'}</td>
                         <td>${new Date(p.created_at).toLocaleDateString('ar-EG')}</td>
                     </tr>`;
                 });
