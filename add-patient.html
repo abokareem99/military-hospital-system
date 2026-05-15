@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تسجيل مريض - مستشفى السلاح الطبي</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { 
             --gold: #d4af37; 
             --gold-dark: #b8860b; 
             --deep-blue: #0f172a; 
-            --medical-green: #14532d; /* أخضر ملكي غامق ومريح */
+            --medical-green: #14532d; 
         }
         
         body { 
@@ -43,25 +44,23 @@
         .form-body { padding: 25px; }
         label { display: block; margin-bottom: 5px; color: #1e293b; font-weight: 700; font-size: 14px; }
         
-        /* الحقول الأربعة باللون الأخضر الملكي المريح */
         input[type="text"], input[type="tel"], select { 
             width: 100%; padding: 14px; 
             border: 2px solid var(--medical-green); 
             border-radius: 12px; box-sizing: border-box; font-family: 'Cairo'; 
             margin-bottom: 18px; 
-            background: var(--medical-green) !important; /* خلفية خضراء غامقة */
-            color: #ffffff !important; /* نص أبيض لراحة العين */
+            background: var(--medical-green) !important; 
+            color: #ffffff !important; 
             font-size: 15px;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
             transition: 0.3s ease;
         }
 
-        /* تغيير لون الـ Placeholder (النص التوضيحي) ليكون أبيض باهت */
         input::placeholder { color: rgba(255,255,255,0.6); }
 
         input:focus, select:focus { 
             border-color: var(--gold); 
-            background: #166534 !important; /* تفتيح بسيط جداً عند التركيز */
+            background: #166534 !important; 
             box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
             outline: none;
         }
@@ -78,10 +77,11 @@
             font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
         }
 
+        .btn-save:disabled { background: #94a3b8; cursor: not-allowed; }
+
         .footer-nav { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; }
         .footer-nav a { text-decoration: none; color: #64748b; font-size: 13px; font-weight: bold; }
 
-        /* نافذة النجاح المخصصة */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .modal-box { background: white; padding: 25px; border-radius: 15px; text-align: center; border: 3px solid var(--gold); }
     </style>
@@ -89,7 +89,7 @@
 <body>
     <div id="successModal" class="modal-overlay">
         <div class="modal-box">
-            <h2 style="color: var(--medical-green)">✅ تم الحفظ</h2>
+            <h2 style="color: var(--medical-green)">✅ تم الحفظ سحابياً</h2>
             <p id="msg"></p>
             <button onclick="closeM()" style="background:var(--deep-blue); color:white; padding:10px 20px; border:none; border-radius:8px; cursor:pointer;">موافق</button>
         </div>
@@ -134,7 +134,7 @@
                 <option>فصام</option><option>اضطراب ما بعد الصدمة</option><option>أخرى</option>
             </select>
 
-            <button class="btn-save" onclick="saveData()">حفظ في المنظومة</button>
+            <button class="btn-save" id="saveBtn" onclick="saveData()">حفظ في المنظومة السحابية</button>
 
             <div class="footer-nav">
                 <a href="records.html">📁 سجل الحالات</a>
@@ -144,29 +144,60 @@
     </div>
 
     <script>
+        // إعدادات Supabase
+        const S_URL = 'https://kqauubmsyrvsqtcqjfch.supabase.co';
+        const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYXV1Ym1zeXJ2c3F0Y3FqZmNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NDI3NDMsImV4cCI6MjA5MzUxODc0M30.jDJb85oG4PZlwo7hwzsNtBbn9TqjQDxjPedxu4wApCc';
+        const _supabase = supabase.createClient(S_URL, S_KEY);
+
         function toggleType() {
             const type = document.querySelector('input[name="pType"]:checked').value;
             document.getElementById('unitDiv').style.display = type === 'عسكري' ? 'block' : 'none';
             document.getElementById('addrDiv').style.display = type === 'مدني' ? 'block' : 'none';
         }
-        function saveData() {
-            const p = {
-                type: document.querySelector('input[name="pType"]:checked').value,
-                code: document.getElementById('pCode').value,
-                phone: document.getElementById('pPhone').value,
-                unit: document.getElementById('pUnit').value,
-                addr: document.getElementById('pAddr').value,
-                diag: document.getElementById('pDiag').value,
-                date: new Date().toLocaleDateString('ar-EG')
-            };
-            if(!p.code) { alert("أدخل البيانات"); return; }
-            let list = JSON.parse(localStorage.getItem('patients')) || [];
-            list.push(p);
-            localStorage.setItem('patients', JSON.stringify(list));
-            document.getElementById('msg').innerText = "تم حفظ مريض: " + p.code;
-            document.getElementById('successModal').style.display = 'flex';
+
+        async function saveData() {
+            const type = document.querySelector('input[name="pType"]:checked').value;
+            const code = document.getElementById('pCode').value;
+            const phone = document.getElementById('pPhone').value;
+            const unit = document.getElementById('pUnit').value;
+            const addr = document.getElementById('pAddr').value;
+            const diag = document.getElementById('pDiag').value;
+
+            if(!code) { alert("أدخل اسم أو كود المريض"); return; }
+
+            const btn = document.getElementById('saveBtn');
+            btn.innerText = "جاري الحفظ...";
+            btn.disabled = true;
+
+            // الحفظ في Supabase
+            const { data, error } = await _supabase
+                .from('psychiatry_patients')
+                .insert([
+                    { 
+                        patient_code: code, 
+                        patient_type: type, 
+                        phone: phone, 
+                        unit: type === 'عسكري' ? unit : null, 
+                        address: type === 'مدني' ? addr : null, 
+                        diagnosis: diag 
+                    }
+                ]);
+
+            if (error) {
+                console.error("خطأ:", error);
+                alert("حدث خطأ: " + error.message);
+                btn.innerText = "حفظ في المنظومة السحابية";
+                btn.disabled = false;
+            } else {
+                document.getElementById('msg').innerText = "تم تسجيل المريض " + code + " بنجاح في قاعدة البيانات السحابية.";
+                document.getElementById('successModal').style.display = 'flex';
+            }
         }
-        function closeM() { document.getElementById('successModal').style.display='none'; location.reload(); }
+
+        function closeM() { 
+            document.getElementById('successModal').style.display='none'; 
+            window.location.href = 'records.html'; // الانتقال للسجل لرؤية النتيجة
+        }
     </script>
 </body>
 </html>
