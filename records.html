@@ -9,99 +9,51 @@
     <style>
         :root { --gold: #d4af37; --gold-dark: #b8860b; --deep-blue: #0f172a; --medical-green: #14532d; }
         body { font-family: 'Cairo', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-        
         .container { width: 100%; max-width: 1200px; margin: auto; background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 5px solid var(--gold); overflow: hidden; }
         .header { background: var(--deep-blue); color: var(--gold); padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        
         .table-container { padding: 20px; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; }
         th { background: #f8fafc; padding: 15px; text-align: right; border-bottom: 2px solid var(--gold); color: var(--deep-blue); }
         td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
-
         .actions button { border: none; background: none; cursor: pointer; font-size: 18px; margin: 0 5px; }
-        .btn-edit { color: #2563eb; }
-        .btn-delete { color: #dc2626; }
-        .btn-print { color: var(--gold-dark); }
+        .btn-edit { color: #2563eb; } .btn-print { color: var(--gold-dark); } .btn-delete { color: #dc2626; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .mil { background: #dcfce7; color: #166534; } .civ { background: #fef3c7; color: #92400e; }
 
-        /* نافذة التعديل الكبيرة */
+        /* مودال التعديل */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 10px; }
         .modal-content { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 500px; border-top: 8px solid var(--gold); max-height: 90vh; overflow-y: auto; }
-        .modal-content h3 { margin-top: 0; color: var(--deep-blue); border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        
-        .form-group { margin-bottom: 15px; text-align: right; }
-        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; color: #475569; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: 'Cairo'; box-sizing: border-box; }
-        
+        .form-group { margin-bottom: 12px; text-align: right; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: 'Cairo'; }
         .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
         .btn-update { background: var(--medical-green); color: white; flex: 2; padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
         .btn-close { background: #64748b; color: white; flex: 1; padding: 12px; border: none; border-radius: 10px; cursor: pointer; }
-
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .mil { background: #dcfce7; color: #166534; }
-        .civ { background: #fef3c7; color: #92400e; }
+        @media print { .no-print { display: none !important; } }
     </style>
 </head>
 <body>
 
 <div id="editModal" class="modal">
     <div class="modal-content">
-        <h3>✏️ تعديل بيانات الملف المرضي</h3>
+        <h3>✏️ تعديل بيانات المريض</h3>
         <input type="hidden" id="editId">
-        
-        <div class="form-group">
-            <label>نوع المريض:</label>
-            <select id="editType" onchange="toggleEditFields()">
-                <option value="عسكري">عسكري</option>
-                <option value="مدني">مدني</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>كود المريض / الاسم:</label>
-            <input type="text" id="editCode">
-        </div>
-
-        <div class="form-group">
-            <label>رقم الهاتف:</label>
-            <input type="tel" id="editPhone">
-        </div>
-
-        <div id="editUnitDiv" class="form-group">
-            <label>الوحدة العسكرية:</label>
-            <input type="text" id="editUnit">
-        </div>
-
-        <div id="editAddrDiv" class="form-group">
-            <label>العنوان:</label>
-            <input type="text" id="editAddr">
-        </div>
-
-        <div class="form-group">
-            <label>التشخيص الحالي:</label>
-            <select id="editDiag">
-                <option>قلق عام</option><option>إكتئاب</option><option>اضطراب ثنائي القطب</option>
-                <option>فصام</option><option>اضطراب ما بعد الصدمة</option><option>أخرى</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>ملاحظات إضافية:</label>
-            <input type="text" id="editNotes">
-        </div>
-
-        <div class="modal-btns">
-            <button class="btn-update" onclick="updateRecord()">تحديث البيانات في السحاب</button>
-            <button class="btn-close" onclick="closeModal()">إلغاء</button>
-        </div>
+        <div class="form-group"><label>نوع المريض:</label><select id="editType" onchange="toggleEditFields()"><option value="عسكري">عسكري</option><option value="مدني">مدني</option></select></div>
+        <div class="form-group"><label>الكود/الاسم:</label><input type="text" id="editCode"></div>
+        <div class="form-group"><label>الهاتف:</label><input type="tel" id="editPhone"></div>
+        <div id="editUnitDiv" class="form-group"><label>الوحدة:</label><input type="text" id="editUnit"></div>
+        <div id="editAddrDiv" class="form-group"><label>العنوان:</label><input type="text" id="editAddr"></div>
+        <div class="form-group"><label>التشخيص:</label><select id="editDiag"><option>قلق عام</option><option>إكتئاب</option><option>اضطراب ثنائي القطب</option><option>فصام</option><option>أخرى</option></select></div>
+        <div class="form-group"><label>ملاحظات:</label><input type="text" id="editNotes"></div>
+        <div class="modal-btns"><button class="btn-update" onclick="updateRecord()">حفظ التعديلات</button><button class="btn-close" onclick="closeModal()">إلغاء</button></div>
     </div>
 </div>
 
 <div class="container">
     <div class="header">
-        <h1>📁 سجل السلاح الطبي - قسم النفسية</h1>
+        <h1>📁 سجل متابعة الحالات الرقمي</h1>
         <div id="statsCount"></div>
     </div>
-
     <div class="table-container">
         <table>
             <thead>
@@ -110,12 +62,15 @@
                     <th>النوع</th>
                     <th>التشخيص</th>
                     <th>الهاتف</th>
-                    <th>الوحدة/العنوان</th>
-                    <th>إجراءات</th>
+                    <th>الموقع</th>
+                    <th class="no-print">إجراءات</th>
                 </tr>
             </thead>
             <tbody id="recordsList"></tbody>
         </table>
+    </div>
+    <div class="no-print" style="padding: 15px; text-align: center; background: #f8fafc;">
+        <a href="add-patient.html" style="text-decoration:none; color:var(--medical-green); font-weight:bold;">➕ إضافة مريض جديد</a>
     </div>
 </div>
 
@@ -127,9 +82,8 @@
     async function loadRecords() {
         const { data, error } = await _supabase.from('psychiatry_patients').select('*').order('created_at', { ascending: false });
         if (error) return;
-        const table = document.getElementById('recordsList');
         document.getElementById('statsCount').innerText = `إجمالي: ${data.length}`;
-        table.innerHTML = data.map(p => {
+        document.getElementById('recordsList').innerHTML = data.map(p => {
             const pData = JSON.stringify(p).replace(/'/g, "&apos;");
             return `
                 <tr>
@@ -138,19 +92,13 @@
                     <td>${p.diagnosis}</td>
                     <td>${p.phone || '-'}</td>
                     <td>${p.patient_type === 'عسكري' ? (p.unit || '-') : (p.address || '-')}</td>
-                    <td class="actions">
+                    <td class="actions no-print">
                         <button class="btn-edit" onclick='openEditModal(${pData})'>✏️</button>
+                        <button class="btn-print" onclick='printSingleRecord(${pData})'>🖨️</button>
                         <button class="btn-delete" onclick="deleteRecord('${p.id}', '${p.patient_code}')">🗑️</button>
                     </td>
-                </tr>
-            `;
+                </tr>`;
         }).join('');
-    }
-
-    function toggleEditFields() {
-        const type = document.getElementById('editType').value;
-        document.getElementById('editUnitDiv').style.display = type === 'عسكري' ? 'block' : 'none';
-        document.getElementById('editAddrDiv').style.display = type === 'مدني' ? 'block' : 'none';
     }
 
     function openEditModal(p) {
@@ -166,41 +114,50 @@
         document.getElementById('editModal').style.display = 'flex';
     }
 
+    function toggleEditFields() {
+        const type = document.getElementById('editType').value;
+        document.getElementById('editUnitDiv').style.display = type === 'عسكري' ? 'block' : 'none';
+        document.getElementById('editAddrDiv').style.display = type === 'مدني' ? 'block' : 'none';
+    }
+
     function closeModal() { document.getElementById('editModal').style.display = 'none'; }
 
     async function updateRecord() {
         const id = document.getElementById('editId').value;
-        const btn = document.querySelector('.btn-update');
-        btn.innerText = "جاري التحديث...";
-        btn.disabled = true;
-
-        const updatedData = {
-            patient_type: document.getElementById('editType').value,
+        const type = document.getElementById('editType').value;
+        const { error } = await _supabase.from('psychiatry_patients').update({
+            patient_type: type,
             patient_code: document.getElementById('editCode').value,
             phone: document.getElementById('editPhone').value,
-            unit: document.getElementById('editType').value === 'عسكري' ? document.getElementById('editUnit').value : null,
-            address: document.getElementById('editType').value === 'مدني' ? document.getElementById('editAddr').value : null,
+            unit: type === 'عسكري' ? document.getElementById('editUnit').value : null,
+            address: type === 'مدني' ? document.getElementById('editAddr').value : null,
             diagnosis: document.getElementById('editDiag').value,
             notes: document.getElementById('editNotes').value
-        };
+        }).eq('id', id);
 
-        const { error } = await _supabase.from('psychiatry_patients').update(updatedData).eq('id', id);
-
-        if (!error) {
-            closeModal();
-            loadRecords();
-        } else {
-            alert("فشل التحديث: " + error.message);
-        }
-        btn.innerText = "تحديث البيانات في السحاب";
-        btn.disabled = false;
+        if (!error) { closeModal(); loadRecords(); }
+        else { alert("خطأ في التحديث: " + error.message); }
     }
 
     async function deleteRecord(id, code) {
-        if(confirm(`هل تريد حذف المريض (${code}) نهائياً؟`)) {
-            await _supabase.from('psychiatry_patients').delete().eq('id', id);
-            loadRecords();
-        }
+        if(confirm(`حذف ${code}؟`)) { await _supabase.from('psychiatry_patients').delete().eq('id', id); loadRecords(); }
+    }
+
+    function printSingleRecord(p) {
+        const win = window.open('', '_blank');
+        win.document.write(`
+            <html dir="rtl"><head><title>تقرير</title><style>body{font-family:Cairo,sans-serif;padding:30px;border:2px solid #000;} h2{text-align:center;color:#14532d;}</style></head>
+            <body>
+                <h2>تقرير حالة نفسية - مستشفى السلاح الطبي</h2>
+                <hr>
+                <p><b>كود المريض:</b> ${p.patient_code}</p>
+                <p><b>التشخيص:</b> ${p.diagnosis}</p>
+                <p><b>الهاتف:</b> ${p.phone || '-'}</p>
+                <p><b>الموقع:</b> ${p.patient_type === 'عسكري' ? p.unit : p.address}</p>
+                <p><b>ملاحظات:</b> ${p.notes || '-'}</p>
+                <br><p>التوقيع: ....................</p>
+                <script>window.onload=function(){window.print();window.close();}<\/script>
+            </body></html>`);
     }
 
     window.onload = loadRecords;
