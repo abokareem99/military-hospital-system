@@ -6,44 +6,40 @@
     <title>دخول - منظومة السلاح الطبي</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary-color: #1e3a8a; --secondary-color: #0f172a; }
-        body { font-family: 'Cairo', sans-serif; background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%); display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; color: #fff; }
-        .container { max-width: 450px; width: 90%; background: rgba(255, 255, 255, 0.98); padding: 40px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); text-align: center; border-bottom: 8px solid var(--primary-color); }
-        .logo { width: 100px; height: auto; margin-bottom: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
-        h2 { color: var(--secondary-color); margin-bottom: 10px; font-weight: 700; }
-        .status-bar { background: #f1f5f9; padding: 10px; border-radius: 50px; color: var(--primary-color); font-weight: bold; margin-bottom: 30px; font-size: 14px; border: 1px solid #cbd5e1; }
-        input { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 18px; text-align: center; box-sizing: border-box; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--primary-color); box-shadow: 0 0 10px rgba(30, 58, 138, 0.2); }
-        button { width: 100%; padding: 15px; background: var(--primary-color); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        :root { --primary: #1e3a8a; --dark: #0f172a; }
+        body { font-family: 'Cairo', sans-serif; background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%); display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; color: #fff; }
+        .login-card { max-width: 400px; width: 90%; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; border-top: 10px solid var(--primary); }
+        .logo { width: 100px; margin-bottom: 20px; }
+        h2 { color: var(--dark); margin: 0 0 10px 0; }
+        .badge { background: #f1f5f9; color: var(--primary); padding: 8px 15px; border-radius: 50px; font-weight: bold; font-size: 13px; display: inline-block; margin-bottom: 25px; }
+        input { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 18px; text-align: center; box-sizing: border-box; font-family: 'Cairo'; }
+        button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:hover { background: #1e40af; transform: translateY(-2px); }
-        #errorMsg { color: #dc2626; font-weight: bold; margin-top: 15px; display: none; background: #fee2e2; padding: 10px; border-radius: 8px; }
-        .footer { margin-top: 30px; color: #64748b; font-size: 13px; font-weight: bold; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+        #errorMsg { color: #dc2626; font-weight: bold; margin-top: 15px; display: none; background: #fee2e2; padding: 10px; border-radius: 8px; font-size: 14px; }
+        .footer { margin-top: 30px; color: #64748b; font-size: 12px; border-top: 1px solid #eee; padding-top: 15px; }
     </style>
 </head>
 <body>
-<div class="container">
-    <img src="logo.png" class="logo" alt="شعار السلاح الطبي">
-    <h2>منظومة المكتب التقني</h2>
-    <div class="status-bar">المستشفى العسكري - بورتسودان</div>
-    <input type="password" id="passInput" placeholder="كلمة مرور الوصول">
-    <button onclick="checkPass()" id="loginBtn">دخول للمنظومة</button>
-    <p id="errorMsg">⚠️ عذراً، كلمة المرور غير صحيحة</p>
-    <div class="footer">تأمين وتطوير باسم suha | 2026</div>
-</div>
-<script>
-    function checkPass() {
-        const btn = document.getElementById('loginBtn');
-        const pass = document.getElementById('passInput').value;
-        const error = document.getElementById('errorMsg');
-        
-        if (pass === "Suha2026") {
-            btn.innerText = "جاري التحقق...";
-            setTimeout(() => window.location.href = "add-patient.html", 800);
-        } else {
-            error.style.display = "block";
-            document.getElementById('passInput').value = "";
+    <div class="login-card">
+        <img src="logo.png" class="logo" alt="شعار">
+        <h2>المكتب التقني</h2>
+        <div class="badge">المستشفى العسكري - بورتسودان</div>
+        <input type="password" id="passInput" placeholder="أدخل كلمة المرور">
+        <button onclick="checkPass()">دخول للمنظومة</button>
+        <p id="errorMsg">⚠️ كلمة المرور غير صحيحة</p>
+        <div class="footer">تطوير وتأمين باسم suha | 2026</div>
+    </div>
+    <script>
+        function checkPass() {
+            const pass = document.getElementById('passInput').value;
+            if (pass === "Suha2026") {
+                window.location.href = "add-patient.html";
+            } else {
+                document.getElementById('errorMsg').style.display = "block";
+                document.getElementById('passInput').value = "";
+            }
         }
-    }
-</script>
+        document.getElementById('passInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') checkPass(); });
+    </script>
 </body>
 </html>
