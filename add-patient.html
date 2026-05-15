@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إضافة حالة - السلاح الطبي</title>
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -73,15 +76,19 @@
             btn.innerText = "جاري الحفظ...";
 
             try {
-                // تم تعديل الاسم هنا ليطابق psychiatry_patients
-                const { error } = await _supabase.from('psychiatry_patients').insert([{ patient_code: code, diagnosis: diag, notes: note }]);
+                // استخدام اسم الجدول المحدث psychiatry_patients
+                const { error } = await _supabase.from('psychiatry_patients').insert([{ 
+                    patient_code: code, 
+                    diagnosis: diag, 
+                    notes: note 
+                }]);
                 if (error) throw error;
 
                 msg.innerHTML = "<span style='color:green'>✅ تم الحفظ بنجاح</span>";
                 document.getElementById('p_code').value = '';
                 document.getElementById('p_notes').value = '';
             } catch (err) {
-                msg.innerHTML = `<span style='color:red'>❌ خطأ: ${err.message}</span>`;
+                msg.innerHTML = `<span style='color:red'>❌ خطأ في السيرفر: ${err.message}</span>`;
             } finally {
                 btn.disabled = false;
                 btn.innerText = "حفظ في المنظومة الآمنة";
