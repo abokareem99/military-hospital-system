@@ -9,71 +9,65 @@
     <style>
         :root { --gold: #d4af37; --gold-dark: #b8860b; --deep-blue: #0f172a; }
         body { font-family: 'Cairo', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-        
         .container { width: 100%; max-width: 1200px; margin: auto; background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 5px solid var(--gold); overflow: hidden; }
-        
         .header { background: var(--deep-blue); color: var(--gold); padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .header h1 { margin: 0; font-size: 20px; }
-
-        .search-area { background: #f8fafc; padding: 15px; border-bottom: 1px solid #eee; }
-        #searchInput { width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #e2e8f0; font-family: 'Cairo'; outline: none; }
-        #searchInput:focus { border-color: var(--gold); }
-
         .table-container { padding: 20px; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        th { background: #f8fafc; padding: 15px; text-align: right; border-bottom: 2px solid var(--gold); color: var(--deep-blue); font-size: 14px; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; color: #333; }
-
-        .badge { padding: 4px 10px; border-radius: 5px; font-size: 12px; font-weight: bold; }
-        .mil { background: #dcfce7; color: #166534; } /* عسكري */
-        .civ { background: #fef3c7; color: #92400e; } /* مدني */
-
+        th { background: #f8fafc; padding: 15px; text-align: right; border-bottom: 2px solid var(--gold); color: var(--deep-blue); }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
         .actions button { border: none; background: none; cursor: pointer; font-size: 18px; margin: 0 5px; }
+        .btn-edit { color: #2563eb; }
         .btn-print { color: var(--gold-dark); }
         .btn-delete { color: #dc2626; }
 
-        .footer-nav { background: #f8fafc; padding: 15px; display: flex; gap: 20px; border-top: 1px solid #eee; }
-        .footer-nav a { text-decoration: none; color: var(--deep-blue); font-weight: bold; font-size: 14px; }
-
-        @media print { .no-print { display: none !important; } }
+        /* نافذة التعديل */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; border-top: 5px solid var(--gold); }
+        .modal-content input, .modal-content select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-family: 'Cairo'; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-update { background: var(--deep-blue); color: white; flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; }
+        .btn-close { background: #ccc; flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
 
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3>✏️ تعديل بيانات المريض</h3>
+        <input type="hidden" id="editId">
+        <label>التشخيص:</label>
+        <select id="editDiag">
+            <option>قلق عام</option><option>إكتئاب</option><option>اضطراب ثنائي القطب</option>
+            <option>فصام</option><option>اضطراب ما بعد الصدمة</option><option>أخرى</option>
+        </select>
+        <label>الملاحظات:</label>
+        <input type="text" id="editNotes">
+        <div class="modal-btns">
+            <button class="btn-update" onclick="updateRecord()">حفظ التعديلات</button>
+            <button class="btn-close" onclick="closeModal()">إلغاء</button>
+        </div>
+    </div>
+</div>
+
 <div class="container">
     <div class="header">
-        <div>
-            <h1>📁 سجل متابعة الحالات الرقمي</h1>
-            <small>قسم النفسية - مستشفى السلاح الطبي بورتسودان</small>
-        </div>
-        <div id="statsCount" style="font-size: 14px; font-weight: bold;"></div>
-    </div>
-
-    <div class="search-area no-print">
-        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="🔍 ابحث بالاسم، الكود، التشخيص أو الوحدة...">
+        <h1>📁 سجل متابعة الحالات الرقمي</h1>
+        <div id="statsCount"></div>
     </div>
 
     <div class="table-container">
         <table>
             <thead>
                 <tr>
-                    <th>كود المريض</th>
-                    <th>النوع</th>
+                    <th>الكود</th>
                     <th>التشخيص</th>
                     <th>الهاتف</th>
-                    <th>الوحدة / العنوان</th>
                     <th>الملاحظات</th>
-                    <th class="no-print">إجراءات</th>
+                    <th>إجراءات</th>
                 </tr>
             </thead>
-            <tbody id="recordsList">
-                </tbody>
+            <tbody id="recordsList"></tbody>
         </table>
-    </div>
-
-    <div class="footer-nav no-print">
-        <a href="add-patient.html">➕ إضافة مريض جديد</a>
-        <a href="index.html" style="color: #dc2626;">🚪 خروج</a>
     </div>
 </div>
 
@@ -83,86 +77,59 @@
     const _supabase = supabase.createClient(S_URL, S_KEY);
 
     async function loadRecords() {
-        const { data, error } = await _supabase
-            .from('psychiatry_patients')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (error) {
-            console.error("خطأ:", error);
-            return;
-        }
-
+        const { data, error } = await _supabase.from('psychiatry_patients').select('*').order('created_at', { ascending: false });
+        if (error) return;
         const table = document.getElementById('recordsList');
-        document.getElementById('statsCount').innerText = `إجمالي الحالات: ${data.length}`;
-        
-        table.innerHTML = data.map(p => {
-            const pData = JSON.stringify(p).replace(/'/g, "\\'");
-            return `
-                <tr>
-                    <td><b>${p.patient_code || '-'}</b></td>
-                    <td><span class="badge ${p.patient_type === 'عسكري' ? 'mil' : 'civ'}">${p.patient_type || 'غير محدد'}</span></td>
-                    <td>${p.diagnosis || '-'}</td>
-                    <td>${p.phone || '-'}</td>
-                    <td>${p.patient_type === 'عسكري' ? (p.unit || '-') : (p.address || '-')}</td>
-                    <td>${p.notes || '-'}</td>
-                    <td class="actions no-print">
-                        <button class="btn-print" title="طباعة تقرير" onclick='printSingleRecord(${pData})'>🖨️</button>
-                        <button class="btn-delete" title="حذف" onclick="deleteRecord('${p.id}', '${p.patient_code}')">🗑️</button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
+        table.innerHTML = data.map(p => `
+            <tr>
+                <td><b>${p.patient_code}</b></td>
+                <td>${p.diagnosis}</td>
+                <td>${p.phone || '-'}</td>
+                <td>${p.notes || '-'}</td>
+                <td class="actions">
+                    <button class="btn-edit" onclick='openEditModal(${JSON.stringify(p).replace(/'/g, "&apos;")})'>✏️</button>
+                    <button class="btn-print" onclick='alert("جاري التحضير للطباعة...")'>🖨️</button>
+                    <button class="btn-delete" onclick="deleteRecord('${p.id}')">🗑️</button>
+                </td>
+            </tr>
+        `).join('');
     }
 
-    function filterTable() {
-        let val = document.getElementById("searchInput").value.toLowerCase();
-        let rows = document.getElementById("recordsList").getElementsByTagName("tr");
-        for (let row of rows) {
-            row.style.display = row.innerText.toLowerCase().includes(val) ? "" : "none";
+    function openEditModal(p) {
+        document.getElementById('editId').value = p.id;
+        document.getElementById('editDiag').value = p.diagnosis;
+        document.getElementById('editNotes').value = p.notes || "";
+        document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+
+    async function updateRecord() {
+        const id = document.getElementById('editId').value;
+        const diag = document.getElementById('editDiag').value;
+        const notes = document.getElementById('editNotes').value;
+
+        const { error } = await _supabase
+            .from('psychiatry_patients')
+            .update({ diagnosis: diag, notes: notes })
+            .eq('id', id);
+
+        if (!error) {
+            closeModal();
+            loadRecords();
+        } else {
+            alert("حدث خطأ أثناء التحديث");
         }
     }
 
-    function printSingleRecord(p) {
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <html dir="rtl">
-            <head>
-                <title>تقرير_${p.patient_code}</title>
-                <style>
-                    body { font-family: 'Cairo', sans-serif; padding: 40px; border: 5px solid #0f172a; }
-                    h2 { text-align: center; color: #0f172a; border-bottom: 2px solid #d4af37; padding-bottom: 10px; }
-                    .info { margin-top: 30px; font-size: 18px; }
-                    .info div { margin-bottom: 15px; }
-                    .label { font-weight: bold; width: 150px; display: inline-block; }
-                </style>
-            </head>
-            <body>
-                <h2>مستشفى السلاح الطبي - قسم الصحة النفسية</h2>
-                <div class="info">
-                    <div><span class="label">كود المريض:</span> ${p.patient_code}</div>
-                    <div><span class="label">نوع المريض:</span> ${p.patient_type}</div>
-                    <div><span class="label">التشخيص:</span> ${p.diagnosis}</div>
-                    <div><span class="label">الهاتف:</span> ${p.phone || '-'}</div>
-                    <div><span class="label">الوحدة/العنوان:</span> ${p.patient_type === 'عسكري' ? p.unit : p.address}</div>
-                    <div><span class="label">الملاحظات:</span> ${p.notes || '-'}</div>
-                </div>
-                <div style="margin-top: 50px; text-align: left;">توقيع الطبيب: .....................</div>
-                <script>window.onload = function() { window.print(); window.close(); }<\/script>
-            </body>
-            </html>
-        `);
-    }
-
-    async function deleteRecord(id, code) {
-        if(confirm(`هل تريد حذف السجل ${code} نهائياً؟`)) {
-            const { error } = await _supabase.from('psychiatry_patients').delete().eq('id', id);
-            if(!error) loadRecords();
+    async function deleteRecord(id) {
+        if(confirm("هل أنت متأكد من الحذف؟")) {
+            await _supabase.from('psychiatry_patients').delete().eq('id', id);
+            loadRecords();
         }
     }
 
     window.onload = loadRecords;
 </script>
-
 </body>
 </html>
