@@ -13,11 +13,10 @@
         .content { padding: 30px; }
         .form-group { margin-bottom: 20px; }
         label { display: block; font-weight: bold; margin-bottom: 8px; color: #334155; }
-        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-family: 'Cairo'; outline: none; box-sizing: border-box; font-size: 16px; }
-        input:focus { border-color: #1e3a8a; box-shadow: 0 0 0 3px rgba(30,58,138,0.1); }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-family: 'Cairo'; outline: none; box-sizing: border-box; }
         button { width: 100%; padding: 15px; background: #1e3a8a; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:disabled { background: #94a3b8; cursor: not-allowed; }
-        #statusMsg { text-align: center; margin-top: 20px; font-weight: bold; font-size: 14px; min-height: 20px; }
+        #statusMsg { text-align: center; margin-top: 20px; font-weight: bold; font-size: 14px; }
         .nav { display: flex; justify-content: space-between; margin-top: 25px; border-top: 1px solid #f1f5f9; padding-top: 15px; }
         .nav a { text-decoration: none; color: #1e3a8a; font-weight: bold; font-size: 14px; }
     </style>
@@ -31,7 +30,7 @@
         <div class="content">
             <div class="form-group">
                 <label>كود المريض:</label>
-                <input type="text" id="p_code" placeholder="مثلاً: Psy-001">
+                <input type="text" id="p_code" placeholder="مثلاً: Psy-2026">
             </div>
             <div class="form-group">
                 <label>الحالة التشخيصية:</label>
@@ -44,8 +43,8 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>ملاحظات الطبيب المختص:</label>
-                <textarea id="p_notes" rows="4" placeholder="اكتب التشخيص التفصيلي..."></textarea>
+                <label>ملاحظات الطبيب:</label>
+                <textarea id="p_notes" rows="4"></textarea>
             </div>
             <button id="saveBtn">حفظ في المنظومة الآمنة</button>
             <div id="statusMsg"></div>
@@ -55,7 +54,6 @@
             </div>
         </div>
     </div>
-
     <script>
         const S_URL = 'https://kqauubmsyrvsqtcqjfch.supabase.co';
         const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYXV1Ym1zeXJ2c3F0Y3FqZmNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NDI3NDMsImV4cCI6MjA5MzUxODc0M30.jDJb85oG4PZlwo7hwzsNtBbn9TqjQDxjPedxu4wApCc';
@@ -69,38 +67,21 @@
             const diag = document.getElementById('p_diagnosis').value;
             const note = document.getElementById('p_notes').value.trim();
 
-            if(!code) { 
-                msg.innerHTML = "<span style='color:orange'>⚠️ يرجى إدخال كود المريض</span>"; 
-                return; 
-            }
+            if(!code) { msg.innerHTML = "<span style='color:orange'>⚠️ أدخل كود المريض</span>"; return; }
             
             btn.disabled = true;
             btn.innerText = "جاري الحفظ...";
-            msg.innerHTML = "<span style='color:#1e3a8a'>جاري المزامنة...</span>";
 
             try {
-                // ملاحظة: تأكد أن اسم الجدول في Supabase هو hospital_patients بالضبط
-                const { error } = await _supabase
-                    .from('hospital_patients') 
-                    .insert([{ 
-                        patient_code: code, 
-                        diagnosis: diag, 
-                        notes: note 
-                    }]);
-
+                // تم تعديل الاسم هنا ليطابق psychiatry_patients
+                const { error } = await _supabase.from('psychiatry_patients').insert([{ patient_code: code, diagnosis: diag, notes: note }]);
                 if (error) throw error;
 
-                msg.innerHTML = "<span style='color:green'>✅ تم الحفظ بنجاح في السجل العسكري</span>";
+                msg.innerHTML = "<span style='color:green'>✅ تم الحفظ بنجاح</span>";
                 document.getElementById('p_code').value = '';
                 document.getElementById('p_notes').value = '';
-                
-                // إخفاء الرسالة بعد 3 ثواني
-                setTimeout(() => { msg.innerHTML = ''; }, 3000);
-
             } catch (err) {
-                // إذا ظهر خطأ "Could not find table"، فالمشكلة في اسم الجدول في Supabase
-                msg.innerHTML = `<span style='color:red; font-size:12px;'>❌ خطأ: ${err.message}</span>`;
-                console.error("Full Error:", err);
+                msg.innerHTML = `<span style='color:red'>❌ خطأ: ${err.message}</span>`;
             } finally {
                 btn.disabled = false;
                 btn.innerText = "حفظ في المنظومة الآمنة";
