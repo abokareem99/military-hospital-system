@@ -7,121 +7,86 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #f1f5f9; padding: 15px; margin: 0; }
-        .container { max-width: 450px; margin: 20px auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 8px solid #1e3a8a; }
-        .header-section { text-align: center; margin-bottom: 20px; }
-        .logo { width: 90px; height: auto; margin-bottom: 10px; }
-        h2 { color: #1e3a8a; margin: 0; font-size: 22px; }
-        .dept-info { color: #64748b; font-size: 13px; margin: 5px 0; font-weight: bold; }
-        .form-group { margin-bottom: 15px; text-align: right; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; color: #374151; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-size: 16px; font-family: 'Cairo'; outline: none; }
-        input:focus, select:focus, textarea:focus { border-color: #1e3a8a; box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1); }
-        button { width: 100%; padding: 15px; background-color: #1e3a8a; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        button:hover { background-color: #1e40af; }
-        button:disabled { background-color: #94a3b8; cursor: not-allowed; }
-        #statusMsg { text-align: center; margin-top: 15px; font-weight: bold; min-height: 24px; }
-        .footer-links { text-align: center; margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px; }
-        .footer-links a { text-decoration: none; color: #1e3a8a; margin: 0 10px; font-size: 14px; font-weight: bold; }
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; margin: 0; padding: 20px; }
+        .card { max-width: 500px; margin: auto; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; }
+        .card-header { background: #1e3a8a; color: white; padding: 20px; text-align: center; }
+        .card-body { padding: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 700; margin-bottom: 8px; color: #1e293b; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-family: 'Cairo'; font-size: 15px; outline: none; transition: 0.3s; }
+        input:focus, select:focus, textarea:focus { border-color: #1e3a8a; }
+        .btn-save { width: 100%; padding: 15px; background: #1e3a8a; color: white; border: none; border-radius: 10px; font-size: 17px; font-weight: bold; cursor: pointer; }
+        .btn-save:disabled { background: #94a3b8; }
+        .nav-links { display: flex; justify-content: space-around; margin-top: 25px; border-top: 1px solid #f1f5f9; padding-top: 15px; }
+        .nav-links a { text-decoration: none; color: #64748b; font-size: 14px; font-weight: bold; }
+        #statusMsg { text-align: center; margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="header-section">
-        <img src="logo.png" class="logo" alt="شعار السلاح الطبي">
-        <h2>تسجيل مريض جديد</h2>
-        <p class="dept-info">قسم النفسية - بورتسودان</p>
+<div class="card">
+    <div class="card-header">
+        <h2 style="margin:0">تسجيل حالة جديدة</h2>
+        <small>قسم الطب النفسي - السلاح الطبي</small>
     </div>
-    
-    <div class="form-group">
-        <label>كود المريض:</label>
-        <input type="text" id="p_code" placeholder="مثلاً: PSY-2026">
-    </div>
-
-    <div class="form-group">
-        <label>الحالة النفسية:</label>
-        <select id="p_diagnosis">
-            <option value="اكتئاب">اكتئاب</option>
-            <option value="قلق حاد">قلق حاد</option>
-            <option value="اضطراب صدمة">اضطراب ما بعد الصدمة</option>
-            <option value="فصام">فصام</option>
-            <option value="أخرى">أخرى</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>ملاحظات الطبيب المختص:</label>
-        <textarea id="p_notes" rows="4" placeholder="اكتب التشخيص التفصيلي هنا..."></textarea>
-    </div>
-
-    <button id="saveBtn">حفظ البيانات بالمنظومة</button>
-    
-    <div id="statusMsg"></div>
-
-    <div class="footer-links">
-        <a href="index.html">🏠 الرئيسية</a> | 
-        <a href="view-patients.html">📋 سجل المرضى</a>
+    <div class="card-body">
+        <div class="form-group">
+            <label>كود المريض (العسكري/المدني):</label>
+            <input type="text" id="p_code" placeholder="مثلاً: PSY-1002">
+        </div>
+        <div class="form-group">
+            <label>نوع التشخيص:</label>
+            <select id="p_diagnosis">
+                <option value="اكتئاب">اكتئاب</option>
+                <option value="قلق حاد">قلق حاد</option>
+                <option value="اضطراب صدمة">اضطراب ما بعد الصدمة</option>
+                <option value="فصام">فصام</option>
+                <option value="أخرى">أخرى</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>ملاحظات الطبيب:</label>
+            <textarea id="p_notes" rows="4"></textarea>
+        </div>
+        <button class="btn-save" id="saveBtn">حفظ في المنظومة الآمنة</button>
+        <div id="statusMsg"></div>
+        <div class="nav-links">
+            <a href="view-patients.html">📋 عرض السجلات</a>
+            <a href="index.html">🚪 تسجيل الخروج</a>
+        </div>
     </div>
 </div>
 
 <script>
-    // إعدادات الاتصال بـ Supabase
     const S_URL = 'https://kqauubmsyrvsqtcqjfch.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYXV1Ym1zeXJ2c3F0Y3FqZmNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NDI3NDMsImV4cCI6MjA5MzUxODc0M30.jDJb85oG4PZlwo7hwzsNtBbn9TqjQDxjPedxu4wApCc';
     const _supabase = supabase.createClient(S_URL, S_KEY);
 
-    const saveBtn = document.getElementById('saveBtn');
-    const msg = document.getElementById('statusMsg');
-
-    saveBtn.addEventListener('click', async () => {
+    document.getElementById('saveBtn').addEventListener('click', async () => {
         const code = document.getElementById('p_code').value.trim();
         const diagnosis = document.getElementById('p_diagnosis').value;
-        const notes = document.getElementById('p_notes').value.trim();
+        const notes = document.getElementById('p_notes').value;
+        const msg = document.getElementById('statusMsg');
 
-        // التحقق من إدخال البيانات
-        if(!code) {
-            msg.innerText = "⚠️ يرجى إدخال كود المريض";
-            msg.style.color = "orange";
-            return;
-        }
+        if(!code) { alert("يرجى إدخال كود المريض"); return; }
 
-        // بدء عملية الحفظ
-        saveBtn.disabled = true;
-        saveBtn.innerText = "جاري الحفظ...";
-        msg.innerText = "جاري المزامنة مع المكتب التقني...";
-        msg.style.color = "#1e3a8a";
+        if(!confirm("هل تريد تأكيد حفظ هذه الحالة في السجل الرسمي؟")) return;
 
-        try {
-            const { error } = await _supabase
-                .from('hospital_patients')
-                .insert([{ 
-                    patient_code: code, 
-                    diagnosis: diagnosis, 
-                    notes: notes 
-                }]);
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true;
+        btn.innerText = "جاري التشفير والحفظ...";
 
-            if (error) throw error;
+        const { error } = await _supabase.from('hospital_patients').insert([{ patient_code: code, diagnosis: diagnosis, notes: notes }]);
 
-            // في حال النجاح
-            msg.innerText = "✅ تم الحفظ بنجاح في السجل العسكري";
-            msg.style.color = "green";
-            
-            // تفريغ الحقول بعد النجاح
+        if (!error) {
+            msg.innerHTML = "<span style='color:green'>✅ تمت المزامنة بنجاح</span>";
             document.getElementById('p_code').value = '';
             document.getElementById('p_notes').value = '';
-
-        } catch (error) {
-            // في حال حدوث خطأ
-            msg.innerText = "❌ خطأ في الحفظ: " + error.message;
-            msg.style.color = "red";
-        } finally {
-            // إعادة الزر للعمل
-            saveBtn.disabled = false;
-            saveBtn.innerText = "حفظ البيانات بالمنظومة";
+        } else {
+            msg.innerHTML = "<span style='color:red'>❌ خطأ في الاتصال بالسيرفر</span>";
         }
+        btn.disabled = false;
+        btn.innerText = "حفظ في المنظومة الآمنة";
     });
 </script>
-
 </body>
 </html>
