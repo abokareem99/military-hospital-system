@@ -10,17 +10,34 @@
         body { font-family: 'Cairo', sans-serif; background: linear-gradient(135deg, #020617 0%, #1e293b 100%); margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow-x: hidden; }
         
         .container { width: 90%; max-width: 480px; background: #ffffff; border-radius: 25px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5); border-top: 10px solid var(--gold); position: relative; }
-        .header { background: #1e293b; padding: 25px; text-align: center; border-bottom: 2px solid var(--gold); }
-        .header h1 { margin: 0; font-size: 19px; color: var(--gold); font-weight: 800; }
-        .badge-system { display: inline-block; background: var(--gold); color: #000; padding: 4px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-top: 10px; }
+        .header { background: #1e293b; padding: 20px; text-align: center; border-bottom: 2px solid var(--gold); }
         
-        .form-body { padding: 30px; }
-        label { display: block; margin-bottom: 8px; color: #1e293b; font-weight: 700; }
-        input, select, textarea { width: 100%; padding: 14px; border: 2px solid #f1f5f9; border-radius: 15px; box-sizing: border-box; font-family: 'Cairo'; margin-bottom: 20px; background: #f8fafc; }
+        /* تنسيق الشعار */
+        .logo-img { width: 85px; margin-bottom: 10px; filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.4)); }
         
-        .btn-save { width: 100%; padding: 16px; background: linear-gradient(90deg, var(--gold-dark), var(--gold)); color: #000; border: none; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); }
+        .header h1 { margin: 0; font-size: 18px; color: var(--gold); font-weight: 800; }
+        .header h2 { margin: 5px 0 0; font-size: 16px; color: #ffffff; font-weight: 700; opacity: 0.9; }
+        
+        .badge-system { display: inline-block; background: var(--gold); color: #000; padding: 4px 15px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-top: 12px; }
+        
+        .form-body { padding: 25px; }
+        label { display: block; margin-bottom: 8px; color: #1e293b; font-weight: 700; font-size: 14px; }
+        
+        input, select, textarea { 
+            width: 100%; padding: 12px; border: 2px solid #f1f5f9; border-radius: 12px; 
+            box-sizing: border-box; font-family: 'Cairo'; margin-bottom: 15px; 
+            background: #f8fafc; font-size: 15px; transition: 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus { border-color: var(--gold); outline: none; background: #fff; }
+        
+        .btn-save { 
+            width: 100%; padding: 15px; background: linear-gradient(90deg, var(--gold-dark), var(--gold)); 
+            color: #000; border: none; border-radius: 12px; font-size: 17px; font-weight: bold; 
+            cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); margin-top: 5px;
+        }
 
-        /* تصميم النافذة الاحترافية (Custom Modal) */
+        /* النافذة الاحترافية */
         .modal-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100;
@@ -30,15 +47,13 @@
             background: white; padding: 30px; border-radius: 20px; width: 80%; text-align: center;
             border: 2px solid var(--gold); transform: translateY(-20px); transition: 0.3s;
         }
-        .modal-box h3 { color: var(--gold-dark); margin-top: 0; }
-        .modal-box p { color: #444; font-weight: bold; }
         .btn-close { 
             background: var(--deep-blue); color: white; border: none; padding: 10px 25px; 
             border-radius: 10px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; margin-top: 15px;
         }
 
         .footer-nav { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; }
-        .footer-nav a { text-decoration: none; color: #64748b; font-size: 14px; font-weight: bold; cursor: pointer; }
+        .footer-nav a { text-decoration: none; color: #64748b; font-size: 13px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -46,29 +61,40 @@
 <div class="container">
     <div id="customModal" class="modal-overlay">
         <div class="modal-box">
-            <h3>✅ تم بنجاح</h3>
-            <p id="modalMsg"></p>
+            <h3 style="color: var(--gold-dark); margin:0;">✅ تم بنجاح</h3>
+            <p id="modalMsg" style="margin:15px 0;"></p>
             <button class="btn-close" onclick="closeModal()">حسناً</button>
         </div>
     </div>
 
     <div class="header">
+        <img src="icon-192.png" alt="شعار السلاح الطبي" class="logo-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3063/3063176.png'">
         <h1>مستشفى السلاح الطبي ببورتسودان</h1>
+        <h2>قسم النفسية</h2>
         <div class="badge-system">نظام المتابعة الرقمي</div>
     </div>
 
     <div class="form-body">
         <label>كود المريض:</label>
-        <input type="text" id="patientCode" placeholder="أدخل الكود">
+        <input type="text" id="patientCode" placeholder="أدخل الكود (مثلاً: Ps01)">
 
         <label>الحالة التشخيصية:</label>
         <select id="diagnosis">
-            <option>إكتئاب</option>
-            <option>قلق</option>
+            <option value="" disabled selected>اختر الحالة التشخيصية...</option>
+            <option>قلق عام (GAD)</option>
+            <option>إكتئاب (Depression)</option>
+            <option>اضطراب ثنائي القطب (Bipolar)</option>
+            <option>فصام (Schizophrenia)</option>
+            <option>اضطراب ما بعد الصدمة (PTSD)</option>
+            <option>اضطراب الهلع (Panic Disorder)</option>
+            <option>الوسواس القهري (OCD)</option>
+            <option>اضطراب الشخصية الحدية (BPD)</option>
+            <option>اضطراب التكيف</option>
+            <option>أخرى / مراجعة</option>
         </select>
 
         <label>ملاحظات الطبيب:</label>
-        <textarea id="notes" rows="2"></textarea>
+        <textarea id="notes" rows="2" placeholder="أضف ملاحظات الحالة هنا"></textarea>
 
         <button class="btn-save" onclick="saveData()">حفظ في المنظومة الآمنة</button>
 
@@ -82,11 +108,12 @@
 <script>
     function saveData() {
         const code = document.getElementById('patientCode').value;
-        if(code === "") {
-            showModal("الرجاء إدخال كود المريض أولاً");
+        const diag = document.getElementById('diagnosis').value;
+        if(code === "" || diag === "") {
+            showModal("الرجاء إكمال البيانات الأساسية");
             return;
         }
-        showModal("تم حفظ بيانات المريض: " + code + " بنجاح في القاعدة الرقمية");
+        showModal("تم حفظ بيانات المريض (" + code + ") بنجاح في المنظومة.");
     }
 
     function showModal(msg) {
@@ -96,8 +123,8 @@
 
     function closeModal() {
         document.getElementById('customModal').style.display = 'none';
-        // يمكنك هنا تصفير الخانات بعد الحفظ إذا أردت
         document.getElementById('patientCode').value = "";
+        document.getElementById('notes').value = "";
     }
 </script>
 
