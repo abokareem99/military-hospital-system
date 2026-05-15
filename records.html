@@ -3,164 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سجل الحالات - مستشفى السلاح الطبي</title>
+    <title>سجل الحالات - نظام المتابعة الرقمي</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #d4af37; --gold-dark: #b8860b; --deep-blue: #0f172a; --medical-green: #14532d; }
-        body { font-family: 'Cairo', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-        .container { width: 100%; max-width: 1200px; margin: auto; background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 5px solid var(--gold); overflow: hidden; }
-        .header { background: var(--deep-blue); color: var(--gold); padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .table-container { padding: 20px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        th { background: #f8fafc; padding: 15px; text-align: right; border-bottom: 2px solid var(--gold); color: var(--deep-blue); }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
-        .actions button { border: none; background: none; cursor: pointer; font-size: 18px; margin: 0 5px; }
-        .btn-edit { color: #2563eb; } .btn-print { color: var(--gold-dark); } .btn-delete { color: #dc2626; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .mil { background: #dcfce7; color: #166534; } .civ { background: #fef3c7; color: #92400e; }
-
-        /* مودال التعديل */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 10px; }
-        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 500px; border-top: 8px solid var(--gold); max-height: 90vh; overflow-y: auto; }
-        .form-group { margin-bottom: 12px; text-align: right; }
-        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: 'Cairo'; }
-        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-update { background: var(--medical-green); color: white; flex: 2; padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
-        .btn-close { background: #64748b; color: white; flex: 1; padding: 12px; border: none; border-radius: 10px; cursor: pointer; }
-        @media print { .no-print { display: none !important; } }
+        body { font-family: 'Cairo', sans-serif; background: #0f172a; margin: 0; }
+        #lockScreen { background: white; padding: 40px; border-radius: 20px; width: 320px; margin: 100px auto; text-align: center; }
+        #mainContent { display: none; padding: 20px; background: #f1f5f9; min-height: 100vh; }
+        .page-header { text-align: center; margin-bottom: 30px; }
+        table { width: 100%; max-width: 1000px; margin: auto; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+        th { background: #1e3a8a; color: white; padding: 12px; text-align: right; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        .print-btn { background: #059669; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+        @media print { .no-print { display: none; } }
     </style>
 </head>
 <body>
-
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <h3>✏️ تعديل بيانات المريض</h3>
-        <input type="hidden" id="editId">
-        <div class="form-group"><label>نوع المريض:</label><select id="editType" onchange="toggleEditFields()"><option value="عسكري">عسكري</option><option value="مدني">مدني</option></select></div>
-        <div class="form-group"><label>الكود/الاسم:</label><input type="text" id="editCode"></div>
-        <div class="form-group"><label>الهاتف:</label><input type="tel" id="editPhone"></div>
-        <div id="editUnitDiv" class="form-group"><label>الوحدة:</label><input type="text" id="editUnit"></div>
-        <div id="editAddrDiv" class="form-group"><label>العنوان:</label><input type="text" id="editAddr"></div>
-        <div class="form-group"><label>التشخيص:</label><select id="editDiag"><option>قلق عام</option><option>إكتئاب</option><option>اضطراب ثنائي القطب</option><option>فصام</option><option>أخرى</option></select></div>
-        <div class="form-group"><label>ملاحظات:</label><input type="text" id="editNotes"></div>
-        <div class="modal-btns"><button class="btn-update" onclick="updateRecord()">حفظ التعديلات</button><button class="btn-close" onclick="closeModal()">إلغاء</button></div>
+    <div id="lockScreen">
+        <h2 style="color:#1e3a8a">فتح سجل الحالات</h2>
+        <input type="password" id="adminPass" style="width:100%; padding:10px; margin-bottom:15px;" placeholder="كلمة المرور">
+        <button onclick="unlock()" style="width:100%; padding:10px; background:#1e3a8a; color:white; border:none; cursor:pointer;">دخول</button>
     </div>
-</div>
 
-<div class="container">
-    <div class="header">
-        <h1>📁 سجل متابعة الحالات الرقمي</h1>
-        <div id="statsCount"></div>
-    </div>
-    <div class="table-container">
+    <div id="mainContent">
+        <div class="page-header">
+            <h4 style="margin:0; color:#64748b;">منطقة البحر الأحمر العسكرية</h4>
+            <h1 style="margin:5px 0; color:#1e3a8a;">مستشفى السلاح الطبي</h1>
+            <h2 style="margin:0; color:#d4af37;">سجل نظام المتابعة الرقمي</h2>
+        </div>
+
         <table>
             <thead>
                 <tr>
-                    <th>كود المريض</th>
-                    <th>النوع</th>
+                    <th>الكود</th>
                     <th>التشخيص</th>
-                    <th>الهاتف</th>
-                    <th>الموقع</th>
+                    <th>التاريخ</th>
                     <th class="no-print">إجراءات</th>
                 </tr>
             </thead>
-            <tbody id="recordsList"></tbody>
+            <tbody id="tableBody"></tbody>
         </table>
+        <div style="text-align:center; margin-top:20px;" class="no-print">
+            <a href="add-patient.html">➕ إضافة مريض جديد</a>
+        </div>
     </div>
-    <div class="no-print" style="padding: 15px; text-align: center; background: #f8fafc;">
-        <a href="add-patient.html" style="text-decoration:none; color:var(--medical-green); font-weight:bold;">➕ إضافة مريض جديد</a>
-    </div>
-</div>
 
-<script>
-    const S_URL = 'https://kqauubmsyrvsqtcqjfch.supabase.co';
-    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYXV1Ym1zeXJ2c3F0Y3FqZmNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NDI3NDMsImV4cCI6MjA5MzUxODc0M30.jDJb85oG4PZlwo7hwzsNtBbn9TqjQDxjPedxu4wApCc';
-    const _supabase = supabase.createClient(S_URL, S_KEY);
+    <script>
+        const S_URL = 'https://kqauubmsyrvsqtcqjfch.supabase.co';
+        const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYXV1Ym1zeXJ2c3F0Y3FqZmNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NDI3NDMsImV4cCI6MjA5MzUxODc0M30.jDJb85oG4PZlwo7hwzsNtBbn9TqjQDxjPedxu4wApCc';
+        const _supabase = supabase.createClient(S_URL, S_KEY);
 
-    async function loadRecords() {
-        const { data, error } = await _supabase.from('psychiatry_patients').select('*').order('created_at', { ascending: false });
-        if (error) return;
-        document.getElementById('statsCount').innerText = `إجمالي: ${data.length}`;
-        document.getElementById('recordsList').innerHTML = data.map(p => {
-            const pData = JSON.stringify(p).replace(/'/g, "&apos;");
-            return `
-                <tr>
-                    <td><b>${p.patient_code}</b></td>
-                    <td><span class="badge ${p.patient_type === 'عسكري' ? 'mil' : 'civ'}">${p.patient_type}</span></td>
-                    <td>${p.diagnosis}</td>
-                    <td>${p.phone || '-'}</td>
-                    <td>${p.patient_type === 'عسكري' ? (p.unit || '-') : (p.address || '-')}</td>
-                    <td class="actions no-print">
-                        <button class="btn-edit" onclick='openEditModal(${pData})'>✏️</button>
-                        <button class="btn-print" onclick='printSingleRecord(${pData})'>🖨️</button>
-                        <button class="btn-delete" onclick="deleteRecord('${p.id}', '${p.patient_code}')">🗑️</button>
-                    </td>
-                </tr>`;
-        }).join('');
-    }
+        function unlock() {
+            if(document.getElementById('adminPass').value === "Ateya2026") {
+                document.getElementById('lockScreen').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                loadData();
+            } else { alert("خطأ!"); }
+        }
 
-    function openEditModal(p) {
-        document.getElementById('editId').value = p.id;
-        document.getElementById('editType').value = p.patient_type;
-        document.getElementById('editCode').value = p.patient_code;
-        document.getElementById('editPhone').value = p.phone || "";
-        document.getElementById('editUnit').value = p.unit || "";
-        document.getElementById('editAddr').value = p.address || "";
-        document.getElementById('editDiag').value = p.diagnosis;
-        document.getElementById('editNotes').value = p.notes || "";
-        toggleEditFields();
-        document.getElementById('editModal').style.display = 'flex';
-    }
+        async function loadData() {
+            const { data } = await _supabase.from('psychiatry_patients').select('*').order('created_at', { ascending: false });
+            if(data) {
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = '';
+                data.forEach(p => {
+                    tbody.innerHTML += `<tr>
+                        <td><b>${p.patient_code}</b></td>
+                        <td>${p.diagnosis}</td>
+                        <td>${new Date(p.created_at).toLocaleDateString('ar-EG')}</td>
+                        <td class="no-print">
+                            <button class="print-btn" onclick='printReport(${JSON.stringify(p)})'>🖨️ طباعة</button>
+                        </td>
+                    </tr>`;
+                });
+            }
+        }
 
-    function toggleEditFields() {
-        const type = document.getElementById('editType').value;
-        document.getElementById('editUnitDiv').style.display = type === 'عسكري' ? 'block' : 'none';
-        document.getElementById('editAddrDiv').style.display = type === 'مدني' ? 'block' : 'none';
-    }
-
-    function closeModal() { document.getElementById('editModal').style.display = 'none'; }
-
-    async function updateRecord() {
-        const id = document.getElementById('editId').value;
-        const type = document.getElementById('editType').value;
-        const { error } = await _supabase.from('psychiatry_patients').update({
-            patient_type: type,
-            patient_code: document.getElementById('editCode').value,
-            phone: document.getElementById('editPhone').value,
-            unit: type === 'عسكري' ? document.getElementById('editUnit').value : null,
-            address: type === 'مدني' ? document.getElementById('editAddr').value : null,
-            diagnosis: document.getElementById('editDiag').value,
-            notes: document.getElementById('editNotes').value
-        }).eq('id', id);
-
-        if (!error) { closeModal(); loadRecords(); }
-        else { alert("خطأ في التحديث: " + error.message); }
-    }
-
-    async function deleteRecord(id, code) {
-        if(confirm(`حذف ${code}؟`)) { await _supabase.from('psychiatry_patients').delete().eq('id', id); loadRecords(); }
-    }
-
-    function printSingleRecord(p) {
-        const win = window.open('', '_blank');
-        win.document.write(`
-            <html dir="rtl"><head><title>تقرير</title><style>body{font-family:Cairo,sans-serif;padding:30px;border:2px solid #000;} h2{text-align:center;color:#14532d;}</style></head>
-            <body>
-                <h2>تقرير حالة نفسية - مستشفى السلاح الطبي</h2>
-                <hr>
-                <p><b>كود المريض:</b> ${p.patient_code}</p>
-                <p><b>التشخيص:</b> ${p.diagnosis}</p>
-                <p><b>الهاتف:</b> ${p.phone || '-'}</p>
-                <p><b>الموقع:</b> ${p.patient_type === 'عسكري' ? p.unit : p.address}</p>
-                <p><b>ملاحظات:</b> ${p.notes || '-'}</p>
-                <br><p>التوقيع: ....................</p>
-                <script>window.onload=function(){window.print();window.close();}<\/script>
-            </body></html>`);
-    }
-
-    window.onload = loadRecords;
-</script>
+        function printReport(p) {
+            const win = window.open('', '_blank');
+            win.document.write(`
+                <html dir="rtl">
+                <head>
+                    <style>
+                        body { font-family: 'Cairo', sans-serif; padding: 40px; }
+                        .h { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px; }
+                        .content { margin-top: 30px; border: 1px solid #ccc; padding: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="h">
+                        <div>
+                            <h3>منطقة البحر الأحمر العسكرية</h3>
+                            <h1>مستشفى السلاح الطبي</h1>
+                            <h4>نظام المتابعة الرقمي</h4>
+                        </div>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Emblem_of_Sudan.svg/1000px-Emblem_of_Sudan.svg.png" style="width:80px;">
+                    </div>
+                    <div class="content">
+                        <p><b>كود المريض:</b> ${p.patient_code}</p>
+                        <p><b>التشخيص:</b> ${p.diagnosis}</p>
+                        <p><b>التاريخ:</b> ${new Date(p.created_at).toLocaleDateString('ar-EG')}</p>
+                    </div>
+                    <script>window.print();<\/script>
+                </body>
+                </html>
+            `);
+            win.document.close();
+        }
+    </script>
 </body>
 </html>
