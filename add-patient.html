@@ -7,73 +7,97 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #d4af37; --gold-dark: #b8860b; --deep-blue: #0f172a; }
-        body { font-family: 'Cairo', sans-serif; background: linear-gradient(135deg, #020617 0%, #1e293b 100%); margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-        .container { width: 90%; max-width: 480px; background: #ffffff; border-radius: 25px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5); border-top: 10px solid var(--gold); }
+        body { font-family: 'Cairo', sans-serif; background: linear-gradient(135deg, #020617 0%, #1e293b 100%); margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow-x: hidden; }
+        
+        .container { width: 90%; max-width: 480px; background: #ffffff; border-radius: 25px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5); border-top: 10px solid var(--gold); position: relative; }
         .header { background: #1e293b; padding: 25px; text-align: center; border-bottom: 2px solid var(--gold); }
         .header h1 { margin: 0; font-size: 19px; color: var(--gold); font-weight: 800; }
-        .header h2 { margin: 5px 0 0; font-size: 16px; color: #fff; opacity: 0.9; }
         .badge-system { display: inline-block; background: var(--gold); color: #000; padding: 4px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-top: 10px; }
+        
         .form-body { padding: 30px; }
-        label { display: block; margin-bottom: 10px; color: #1e293b; font-weight: 700; font-size: 15px; }
-        input, select, textarea { width: 100%; padding: 14px; border: 2px solid #f1f5f9; border-radius: 15px; box-sizing: border-box; font-family: 'Cairo'; font-size: 16px; background: #f8fafc; transition: 0.3s; margin-bottom: 20px; }
-        input:focus, select:focus, textarea:focus { border-color: var(--gold); outline: none; background: #fff; }
-        .btn-save { width: 100%; padding: 16px; background: linear-gradient(90deg, var(--gold-dark), var(--gold)); color: #000; border: none; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); }
-        .btn-save:active { transform: scale(0.98); }
-        .footer-nav { display: flex; justify-content: space-between; margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; }
+        label { display: block; margin-bottom: 8px; color: #1e293b; font-weight: 700; }
+        input, select, textarea { width: 100%; padding: 14px; border: 2px solid #f1f5f9; border-radius: 15px; box-sizing: border-box; font-family: 'Cairo'; margin-bottom: 20px; background: #f8fafc; }
+        
+        .btn-save { width: 100%; padding: 16px; background: linear-gradient(90deg, var(--gold-dark), var(--gold)); color: #000; border: none; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); }
+
+        /* تصميم النافذة الاحترافية (Custom Modal) */
+        .modal-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+        .modal-box {
+            background: white; padding: 30px; border-radius: 20px; width: 80%; text-align: center;
+            border: 2px solid var(--gold); transform: translateY(-20px); transition: 0.3s;
+        }
+        .modal-box h3 { color: var(--gold-dark); margin-top: 0; }
+        .modal-box p { color: #444; font-weight: bold; }
+        .btn-close { 
+            background: var(--deep-blue); color: white; border: none; padding: 10px 25px; 
+            border-radius: 10px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; margin-top: 15px;
+        }
+
+        .footer-nav { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; }
         .footer-nav a { text-decoration: none; color: #64748b; font-size: 14px; font-weight: bold; cursor: pointer; }
-        .logo-img { width: 80px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div id="customModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>✅ تم بنجاح</h3>
+            <p id="modalMsg"></p>
+            <button class="btn-close" onclick="closeModal()">حسناً</button>
+        </div>
+    </div>
+
     <div class="header">
-        <img src="icon-192.png" alt="الشعار" class="logo-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3063/3063176.png'">
         <h1>مستشفى السلاح الطبي ببورتسودان</h1>
-        <h2>قسم النفسية</h2>
         <div class="badge-system">نظام المتابعة الرقمي</div>
     </div>
 
     <div class="form-body">
         <label>كود المريض:</label>
-        <input type="text" id="patientCode" placeholder="أدخل الكود (مثلاً: Ps01)">
+        <input type="text" id="patientCode" placeholder="أدخل الكود">
 
         <label>الحالة التشخيصية:</label>
         <select id="diagnosis">
             <option>إكتئاب</option>
             <option>قلق</option>
-            <option>فصام</option>
-            <option>أخرى</option>
         </select>
 
         <label>ملاحظات الطبيب:</label>
-        <textarea id="notes" rows="3" placeholder="أضف الملاحظات"></textarea>
+        <textarea id="notes" rows="2"></textarea>
 
         <button class="btn-save" onclick="saveData()">حفظ في المنظومة الآمنة</button>
 
         <div class="footer-nav">
-            <a onclick="goToRecords()">📁 سجل الحالات</a>
+            <a href="records.html">📁 سجل الحالات</a>
             <a href="index.html" style="color: #dc2626;">🚪 خروج</a>
         </div>
     </div>
 </div>
 
 <script>
-    // حل مشكلة زر الحفظ
     function saveData() {
         const code = document.getElementById('patientCode').value;
         if(code === "") {
-            alert("الرجاء إدخال كود المريض أولاً");
+            showModal("الرجاء إدخال كود المريض أولاً");
             return;
         }
-        alert("تم حفظ بيانات المريض: " + code + " بنجاح في القاعدة الرقمية");
-        // هنا يمكنك إضافة كود الحفظ الفعلي لاحقاً
+        showModal("تم حفظ بيانات المريض: " + code + " بنجاح في القاعدة الرقمية");
     }
 
-    // حل مشكلة سجل الحالات (خطأ 404)
-    function goToRecords() {
-        // تأكد أنك قمت بإنشاء ملف باسم records.html رفعه على الاستضافة
-        window.location.href = "records.html";
+    function showModal(msg) {
+        document.getElementById('modalMsg').innerText = msg;
+        document.getElementById('customModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('customModal').style.display = 'none';
+        // يمكنك هنا تصفير الخانات بعد الحفظ إذا أردت
+        document.getElementById('patientCode').value = "";
     }
 </script>
 
