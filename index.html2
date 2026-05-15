@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دخول - نظام المتابعة الرقمي</title>
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --gold: #d4af37; 
+            --dark-gold: #b8860b;
+            --dark: #1a1a1a; 
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+        
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background: var(--bg-gradient); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            color: #fff; 
+        }
+
+        .login-card { 
+            max-width: 450px; 
+            width: 90%; 
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 40px; 
+            border-radius: 25px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+            text-align: center; 
+            border: 2px solid var(--gold);
+            position: relative;
+        }
+
+        /* تأثير الخط الذهبي العلوي */
+        .login-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, var(--dark-gold), var(--gold), var(--dark-gold));
+            border-radius: 25px 25px 0 0;
+        }
+
+        .logo { 
+            width: 110px; 
+            margin-bottom: 15px; 
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+        }
+
+        h1 { 
+            color: var(--dark); 
+            font-size: 22px; 
+            margin: 10px 0 5px 0; 
+            font-weight: 700;
+        }
+
+        h2 { 
+            color: var(--dark-gold); 
+            font-size: 18px; 
+            margin: 0 0 15px 0; 
+        }
+
+        .badge { 
+            background: var(--dark); 
+            color: var(--gold); 
+            padding: 10px 20px; 
+            border-radius: 50px; 
+            font-weight: bold; 
+            font-size: 14px; 
+            display: inline-block; 
+            margin-bottom: 30px;
+            border: 1px solid var(--gold);
+        }
+
+        input { 
+            width: 100%; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 15px; 
+            font-size: 18px; 
+            text-align: center; 
+            box-sizing: border-box; 
+            font-family: 'Cairo';
+            transition: 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+        }
+
+        button { 
+            width: 100%; 
+            padding: 15px; 
+            background: linear-gradient(90deg, var(--dark-gold), var(--gold)); 
+            color: #000; 
+            border: none; 
+            border-radius: 15px; 
+            font-size: 19px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        button:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+            filter: brightness(1.1);
+        }
+
+        #errorMsg { 
+            color: #dc2626; 
+            font-weight: bold; 
+            margin-top: 15px; 
+            display: none; 
+            background: #fee2e2; 
+            padding: 10px; 
+            border-radius: 10px; 
+            font-size: 14px; 
+        }
+
+        .footer { 
+            margin-top: 35px; 
+            color: #64748b; 
+            font-size: 13px; 
+            border-top: 1px solid #eee; 
+            padding-top: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <img src="icon-192.png" class="logo" alt="شعار السلاح الطبي">
+        
+        <h1>مستشفى السلاح الطبي ببورتسودان</h1>
+        <h2>قسم النفسية</h2>
+        
+        <div class="badge">نظام المتابعة الرقمي</div>
+        
+        <input type="password" id="passInput" placeholder="أدخل كلمة المرور">
+        <button onclick="checkPass()">دخول للمنظومة</button>
+        
+        <p id="errorMsg">⚠️ كلمة المرور غير صحيحة</p>
+        
+        <div class="footer">تطوير وتأمين باسم suha | 2026</div>
+    </div>
+
+    <script>
+        function checkPass() {
+            const pass = document.getElementById('passInput').value;
+            // كلمة المرور كما هي في طلبك السابق
+            if (pass === "Suha2026") {
+                window.location.href = "add-patient.html";
+            } else {
+                document.getElementById('errorMsg').style.display = "block";
+                document.getElementById('passInput').value = "";
+            }
+        }
+
+        // تفعيل زر الإدخال من لوحة المفاتيح
+        document.getElementById('passInput').addEventListener('keypress', (e) => { 
+            if(e.key === 'Enter') checkPass(); 
+        });
+    </script>
+</body>
+</html>
