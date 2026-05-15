@@ -7,66 +7,112 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #d4af37; --gold-dark: #b8860b; --deep-blue: #0f172a; }
-        body { font-family: 'Cairo', sans-serif; background: linear-gradient(135deg, #020617 0%, #1e293b 100%); margin: 0; padding: 20px; color: #fff; min-height: 100vh; }
+        body { font-family: 'Cairo', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
         
-        .container { width: 100%; max-width: 800px; margin: auto; background: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-top: 8px solid var(--gold); }
+        .container { width: 100%; max-width: 1100px; margin: auto; background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 5px solid var(--gold); overflow: hidden; }
         
-        .header { background: #1e293b; padding: 20px; text-align: center; border-bottom: 2px solid var(--gold); }
-        .header h1 { margin: 0; font-size: 20px; color: var(--gold); }
-        
+        .header { background: var(--deep-blue); color: var(--gold); padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { margin: 0; font-size: 22px; }
+
+        .btn-print { background: var(--gold); color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-print:hover { background: var(--gold-dark); }
+
         .table-container { padding: 20px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; color: #333; text-align: right; }
-        th { background: #f1f5f9; color: var(--deep-blue); padding: 12px; border-bottom: 2px solid var(--gold); }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
-        tr:hover { background: #fffdf5; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th { background: #f8fafc; padding: 15px; text-align: right; border-bottom: 2px solid var(--gold); color: var(--deep-blue); }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; color: #444; }
 
-        .status-badge { background: #eef2ff; color: var(--gold-dark); padding: 4px 10px; border-radius: 8px; font-weight: bold; font-size: 12px; }
+        .badge { padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; }
+        .mil { background: #dcfce7; color: #166534; } /* عسكري */
+        .civ { background: #fef3c7; color: #92400e; } /* مدني */
 
-        .footer-nav { background: #f8fafc; padding: 15px 25px; display: flex; justify-content: space-between; border-top: 1px solid #eee; }
-        .btn-back { text-decoration: none; color: var(--deep-blue); font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 5px; }
-        .btn-back:hover { color: var(--gold-dark); }
+        .actions button { border: none; background: none; cursor: pointer; font-size: 16px; margin: 0 5px; }
+        .btn-edit { color: #2563eb; }
+        .btn-delete { color: #dc2626; }
+
+        .footer-nav { background: #f8fafc; padding: 15px; display: flex; gap: 15px; }
+        .footer-nav a { text-decoration: none; color: var(--deep-blue); font-weight: bold; font-size: 14px; }
+
+        @media print {
+            .btn-print, .actions, .footer-nav { display: none; }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; border: none; }
+            th { background: #eee !important; color: black !important; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1>📁 سجل حالات قسم النفسية</h1>
-        <p style="margin: 5px 0 0; font-size: 12px; color: #ccc;">مستشفى السلاح الطبي - بورتسودان</p>
+        <div>
+            <h1>📁 سجل متابعة الحالات الرقمي</h1>
+            <small>قسم النفسية - مستشفى السلاح الطبي بورتسودان</small>
+        </div>
+        <button class="btn-print" onclick="window.print()">🖨️ طباعة تقرير</button>
     </div>
 
     <div class="table-container">
         <table>
             <thead>
                 <tr>
-                    <th>كود المريض</th>
+                    <th>الكود</th>
+                    <th>الاسم/النوع</th>
                     <th>التشخيص</th>
-                    <th>التاريخ</th>
-                    <th>الإجراء</th>
+                    <th>الهاتف</th>
+                    <th>العنوان/الوحدة</th>
+                    <th>الإجراءات</th>
                 </tr>
             </thead>
-            <tbody id="recordsTable">
-                <tr>
-                    <td>Ps-101</td>
-                    <td><span class="status-badge">قلق عام</span></td>
-                    <td>2026/05/15</td>
-                    <td style="color: var(--gold-dark); cursor: pointer;">عرض التفاصيل</td>
-                </tr>
-                <tr>
-                    <td>Ps-102</td>
-                    <td><span class="status-badge">إكتئاب</span></td>
-                    <td>2026/05/14</td>
-                    <td style="color: var(--gold-dark); cursor: pointer;">عرض التفاصيل</td>
-                </tr>
-            </tbody>
+            <tbody id="recordsList">
+                </tbody>
         </table>
     </div>
 
     <div class="footer-nav">
-        <a href="add-patient.html" class="btn-back">➕ إضافة مريض جديد</a>
-        <a href="index.html" style="color: #dc2626; text-decoration: none; font-weight: bold;">🚪 خروج</a>
+        <a href="add-patient.html">➕ إضافة مريض جديد</a>
+        <a href="index.html" style="color: #dc2626;">🚪 خروج</a>
     </div>
 </div>
+
+<script>
+    function loadRecords() {
+        const table = document.getElementById('recordsList');
+        const patients = JSON.parse(localStorage.getItem('patients')) || [];
+        
+        table.innerHTML = patients.map((p, index) => `
+            <tr>
+                <td><b>${p.code}</b></td>
+                <td>
+                    ${p.name || 'مريض'} <br>
+                    <span class="badge ${p.type === 'عسكري' ? 'mil' : 'civ'}">${p.type}</span>
+                </td>
+                <td>${p.diagnosis}</td>
+                <td>${p.phone}</td>
+                <td>${p.type === 'عسكري' ? p.unit : p.address}</td>
+                <td class="actions">
+                    <button class="btn-edit" onclick="editPatient(${index})">📝</button>
+                    <button class="btn-delete" onclick="deletePatient(${index})">🗑️</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function deletePatient(index) {
+        if(confirm('هل أنت متأكد من حذف هذا السجل؟')) {
+            let patients = JSON.parse(localStorage.getItem('patients'));
+            patients.splice(index, 1);
+            localStorage.setItem('patients', JSON.stringify(patients));
+            loadRecords();
+        }
+    }
+
+    function editPatient(index) {
+        alert('خاصية التعديل قيد التطوير، سيتم فتح نموذج التعديل قريباً');
+    }
+
+    window.onload = loadRecords;
+</script>
 
 </body>
 </html>
