@@ -138,9 +138,9 @@
                         <img src="icon-512.png" class="print-logo" alt="شعار الإدارة">
                     </div>
                     <div class="content">
-                        <p><b>كود المريض / الاسم:</b> \${p.patient_code}</p>
-                        <p><b>التشخيص المبدئي:</b> \${p.diagnosis}</p>
-                        <p><b>تاريخ التسجيل المعتمد:</b> \${new Date(p.created_at).toLocaleDateString('ar-EG')}</p>
+                        <p><b>كود المريض / الاسم:</b> ${p.patient_code}</p>
+                        <p><b>التشخيص المبدئي:</b> ${p.diagnosis}</p>
+                        <p><b>تاريخ التسجيل المعتمد:</b> ${new Date(p.created_at).toLocaleDateString('ar-EG')}</p>
                     </div>
                     <script>
                         window.onload = function() {
