@@ -38,6 +38,10 @@
         
         td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
         
+        /* جعل رابط تفاصيل المريض مميز */
+        .patient-link { color: #1e3a8a; text-decoration: underline; font-weight: bold; cursor: pointer; }
+        .patient-link:hover { color: #2563eb; }
+
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; }
         .badge-danger { background: #fee2e2; color: #dc2626; }
         .badge-warning { background: #fef3c7; color: #d97706; }
@@ -54,6 +58,12 @@
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
         .modal-box { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 550px; border-top: 6px solid #d97706; direction: rtl; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); }
         
+        /* مخصص لنافذة التفاصيل */
+        .modal-box.details-type { border-top: 6px solid #1e3a8a; }
+        .info-row { margin-bottom: 12px; font-size: 15px; line-height: 1.6; border-bottom: 1px dashed #f1f5f9; padding-bottom: 8px; text-align: right; color: #334155; }
+        .info-row strong { color: #1e3a8a; display: inline-block; width: 160px; }
+        .info-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-top: 5px; font-size: 14px; white-space: pre-line; color: #0f172a; }
+
         .modal-box.delete-type { border-top: 6px solid #dc2626; text-align: center; }
         .delete-icon-animated { font-size: 50px; margin-bottom: 10px; display: inline-block; animation: shake 0.5s ease infinite alternate; }
         
@@ -75,6 +85,16 @@
         <h2 style="color:#1e3a8a">فتح سجل الحالات</h2>
         <input type="password" id="adminPass" style="width:100%; padding:10px; margin-bottom:15px; box-sizing: border-box; text-align: center;" placeholder="كلمة المرور">
         <button onclick="unlock()" style="width:100%; padding:10px; background:#1e3a8a; color:white; border:none; cursor:pointer; font-family:'Cairo'; font-weight:bold;">دخول</button>
+    </div>
+
+    <div id="detailsModal" class="modal-overlay">
+        <div class="modal-box details-type">
+            <h3 id="detailsTitle">📄 الملف الطبي المتكامل</h3>
+            <div id="detailsContent"></div>
+            <div style="margin-top: 25px;">
+                <button onclick="closeDetailsModal()" style="width: 100%; padding: 12px; background: #64748b; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-size: 15px; font-weight: bold;">إغلاق النافذة</button>
+            </div>
+        </div>
     </div>
 
     <div id="editModal" class="modal-overlay">
@@ -208,6 +228,7 @@
         const _supabase = supabase.createClient(S_URL, S_KEY);
 
         let activeHighlightedRowId = null;
+        let cachedData = [];
 
         function unlock() {
             if(document.getElementById('adminPass').value === "suha2026") {
@@ -220,16 +241,17 @@
         async function loadData() {
             const { data } = await _supabase.from('psychiatry_patients').select('*').order('created_at', { ascending: false });
             if(data) {
+                cachedData = data;
                 const tbody = document.getElementById('tableBody');
                 tbody.innerHTML = '';
-                data.forEach(p => {
+                data.forEach((p, idx) => {
                     let riskBadge = '';
                     if(p.risk_level === 'عالية') riskBadge = '<span class="badge badge-danger">عالية</span>';
                     else if(p.risk_level === 'متوسطة') riskBadge = '<span class="badge badge-warning">متوسطة</span>';
                     else riskBadge = '<span class="badge badge-success">منخفضة</span>';
 
                     tbody.innerHTML += `<tr id="row-${p.id}" onclick="toggleRowHighlight(${p.id}, 'select')">
-                        <td><b>${p.patient_code}</b></td>
+                        <td><span class="patient-link" onclick="event.stopPropagation(); openDetailsModal(${idx});">${p.patient_code}</span></td>
                         <td>${p.type || 'عسكري'} ${p.unit ? `(${p.unit})` : ''}</td>
                         <td>${p.diagnosis || 'غير محدد'}</td>
                         <td>${riskBadge}</td>
@@ -243,6 +265,53 @@
                     </tr>`;
                 });
             }
+        }
+
+        // دالة فتح نافذة التفاصيل وعرض كافة الحقول الجديدة
+        function openDetailsModal(idx) {
+            const p = cachedData[idx];
+            toggleRowHighlight(p.id, 'select');
+            document.getElementById('detailsTitle').innerText = `📄 الملف الطبي للمريض: ${p.patient_code}`;
+            
+            let html = `
+                <div class="info-row"><strong>العمر:</strong> ${p.age ? p.age + ' سنة' : 'غير مسجل'}</div>
+                <div class="info-row"><strong>رقم الهاتف:</strong> ${p.phone || 'غير مسجل'}</div>
+                <div class="info-row"><strong>الفئة:</strong> ${p.type || 'عسكري'}</div>
+            `;
+
+            if(p.type === 'مدني') {
+                html += `<div class="info-row"><strong>العنوان / السكن:</strong> ${p.addr || 'غير مسجل'}</div>`;
+            } else {
+                html += `
+                    <div class="info-row"><strong>الوحدة / الرتبة:</strong> ${p.unit || 'غير مسجل'}</div>
+                    <div class="info-row"><strong>الوضع الإداري:</strong> ${p.administrative_status || 'في الخدمة'}</div>
+                `;
+            }
+
+            html += `
+                <div class="info-row"><strong>التشخيص الحالي:</strong> ${p.diagnosis || 'غير محدد'}</div>
+                <div class="info-row"><strong>درجة الخطورة:</strong> ${p.risk_level || 'منخفضة'}</div>
+                <div class="info-row"><strong>اسم الطبيب المعالج:</strong> ${p.doctor_name || 'غير محدد'}</div>
+                <div class="info-row"><strong>التاريخ المرضي والمزمن:</strong> ${p.past_medical_history || 'لا يوجد'}</div>
+                <div class="info-row"><strong>التاريخ العائلي النفسي:</strong> ${p.family_history || 'لا يوجد'}</div>
+                
+                <div class="info-row" style="border:none; margin-top:15px;"><strong>تاريخ الصدمات أو الظروف القتالية:</strong></div>
+                <div class="info-block">${p.trauma_history || 'لا توجد صدمات مسجلة.'}</div>
+
+                <div class="info-row" style="border:none; margin-top:15px;"><strong>الخطة العلاجية والأدوية:</strong></div>
+                <div class="info-block" style="background:#f0fdf4; border-color:#bbf7d0;">${p.treatment || 'لا توجد خطة مسجلة.'}</div>
+
+                <div class="info-row" style="border:none; margin-top:15px;"><strong>التوصيات وموعد المراجعة:</strong></div>
+                <div class="info-block" style="background:#fffbeb; border-color:#fef3c7;">${p.notes || 'لا توجد توصيات.'}</div>
+            `;
+
+            document.getElementById('detailsContent').innerHTML = html;
+            document.getElementById('detailsModal').style.display = 'flex';
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').style.display = 'none';
+            clearRowHighlight();
         }
 
         function toggleRowHighlight(rowId, mode) {
@@ -279,7 +348,6 @@
             document.getElementById('editTreatment').value = p.treatment || '';
             document.getElementById('editNotes').value = p.notes || '';
             
-            // الحقول الجديدة لملء الاستمارة
             document.getElementById('editUnit').value = p.unit || '';
             document.getElementById('editAdminStatus').value = p.administrative_status || 'في الخدمة';
             document.getElementById('editAddr').value = p.addr || '';
@@ -289,7 +357,6 @@
             document.getElementById('editFamilyHistory').value = p.family_history || '';
             document.getElementById('editDoctor').value = p.doctor_name || '';
 
-            // إظهار وإخفاء الحقول بناء على الفئة (عسكري/مدني)
             if(p.type === 'مدني') {
                 document.getElementById('editUnitDiv').style.display = 'none';
                 document.getElementById('editAddrDiv').style.display = 'block';
@@ -316,7 +383,6 @@
             const treatment = document.getElementById('editTreatment').value;
             const notes = document.getElementById('editNotes').value;
             
-            // قراءة الحقول الجديدة
             const unit = document.getElementById('editUnit').value;
             const adminStatus = document.getElementById('editAdminStatus').value;
             const addr = document.getElementById('editAddr').value;
