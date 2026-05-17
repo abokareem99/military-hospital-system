@@ -43,8 +43,8 @@
         .form-body { padding: 25px; }
         label { display: block; margin-bottom: 5px; color: #1e293b; font-weight: 700; font-size: 14px; }
         
-        /* الحقول الأربعة باللون الأخضر الملكي المريح */
-        input[type="text"], input[type="tel"], select { 
+        /* الحقول باللون الأخضر الملكي المريح */
+        input[type="text"], input[type="tel"], input[type="number"], select, textarea { 
             width: 100%; padding: 14px; 
             border: 2px solid var(--medical-green); 
             border-radius: 12px; box-sizing: border-box; font-family: 'Cairo'; 
@@ -56,10 +56,12 @@
             transition: 0.3s ease;
         }
 
-        /* تغيير لون الـ Placeholder (النص التوضيحي) ليكون أبيض باهت */
-        input::placeholder { color: rgba(255,255,255,0.6); }
+        textarea { resize: vertical; min-height: 80px; }
 
-        input:focus, select:focus { 
+        /* تغيير لون الـ Placeholder (النص التوضيحي) ليكون أبيض باهت */
+        input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.6); }
+
+        input:focus, select:focus, textarea:focus { 
             border-color: var(--gold); 
             background: #166534 !important; /* تفتيح بسيط جداً عند التركيز */
             box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
@@ -115,12 +117,15 @@
             <label>كود المريض / الاسم:</label>
             <input type="text" id="pCode" placeholder="أدخل الكود أو الاسم">
 
+            <label>العمر:</label>
+            <input type="number" id="pAge" placeholder="أدخل عمر المريض">
+
             <label>رقم الهاتف:</label>
             <input type="tel" id="pPhone" placeholder="0XXXXXXXXX">
 
             <div id="unitDiv">
-                <label>الوحدة العسكرية:</label>
-                <input type="text" id="pUnit" placeholder="اسم الوحدة">
+                <label>الوحدة العسكرية والرتية:</label>
+                <input type="text" id="pUnit" placeholder="اسم الوحدة / الرتبة">
             </div>
 
             <div id="addrDiv" style="display:none;">
@@ -133,6 +138,12 @@
                 <option>قلق عام</option><option>إكتئاب</option><option>اضطراب ثنائي القطب</option>
                 <option>فصام</option><option>اضطراب ما بعد الصدمة</option><option>أخرى</option>
             </select>
+
+            <label>الخطة العلاجية والأدوية الموصوفة:</label>
+            <textarea id="pTreatment" placeholder="اكتب العلاج الموصوف والجرعات بالتفصيل..."></textarea>
+
+            <label>توصيات طبية وموعد المراجعة:</label>
+            <input type="text" id="pNotes" placeholder="مثال: مراجعة بعد أسبوعين / راحة طبية">
 
             <button class="btn-save" onclick="saveData()">حفظ في المنظومة</button>
 
@@ -153,10 +164,13 @@
             const p = {
                 type: document.querySelector('input[name="pType"]:checked').value,
                 code: document.getElementById('pCode').value,
+                age: document.getElementById('pAge').value,
                 phone: document.getElementById('pPhone').value,
                 unit: document.getElementById('pUnit').value,
                 addr: document.getElementById('pAddr').value,
                 diag: document.getElementById('pDiag').value,
+                treatment: document.getElementById('pTreatment').value,
+                notes: document.getElementById('pNotes').value,
                 date: new Date().toLocaleDateString('ar-EG')
             };
             if(!p.code) { alert("أدخل البيانات"); return; }
