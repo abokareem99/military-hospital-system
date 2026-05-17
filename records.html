@@ -11,23 +11,23 @@
         #lockScreen { background: white; padding: 40px; border-radius: 20px; width: 320px; margin: 100px auto; text-align: center; }
         #mainContent { display: none; padding: 20px; background: #f1f5f9; min-height: 100vh; }
         
-        /* تنسيق الهيدر المطور مع الشعار */
+        /* تنسيق الهيدر المطور: توسيط النص والشعار على الشمال */
         .page-header { 
             display: flex; 
             align-items: center; 
-            justify-content: center; 
-            gap: 25px; 
+            justify-content: space-between; 
             margin-bottom: 35px; 
             max-width: 1000px; 
             margin-left: auto; 
             margin-right: auto;
             background: white;
-            padding: 20px;
+            padding: 20px 40px;
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
-        .header-logo { width: 90px; height: 90px; object-fit: contain; }
-        .header-text { flex-grow: 0; text-align: right; }
+        .header-placeholder { width: 90px; } /* موازن وهمي لضمان بقاء النص في المنتصف تماماً */
+        .header-logo { width: 90px; height: 90px; object-fit: contain; order: 2; }
+        .header-text { flex-grow: 1; text-align: center; order: 1; }
         .page-header h1 { margin: 0 0 5px 0; color: #1e3a8a; font-size: 26px; font-weight: 900; }
         .page-header h2 { margin: 0 0 5px 0; color: #334155; font-size: 20px; font-weight: 700; }
         .page-header h3 { margin: 0; color: #b45309; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
@@ -48,12 +48,15 @@
 
     <div id="mainContent">
         <div class="page-header">
-            <img src="icon-512.png" alt="شعار الإدارة الطبية" class="header-logo">
+            <div class="header-placeholder"></div>
+            
             <div class="header-text">
                 <h1>منطقة البحر الأحمر العسكرية</h1>
                 <h2>مستشفى السلاح الطبي ببورتسودان</h2>
                 <h3>سجل نظام المتابعة الرقمي</h3>
             </div>
+            
+            <img src="icon-512.png" alt="شعار الإدارة الطبية" class="header-logo">
         </div>
 
         <table>
@@ -113,6 +116,8 @@
                     <style>
                         body { font-family: 'Cairo', sans-serif; padding: 40px; }
                         .h { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 15px; align-items: center; }
+                        .print-placeholder { width: 85px; }
+                        .h-text { flex-grow: 1; text-align: center; }
                         .h-text h1 { margin: 0 0 5px 0; font-size: 24px; font-weight: 900; color: #1e3a8a; }
                         .h-text h2 { margin: 0 0 5px 0; font-size: 19px; font-weight: 700; color: #334155; }
                         .h-text h3 { margin: 0; font-size: 15px; font-weight: 700; color: #b45309; }
@@ -124,6 +129,7 @@
                 </head>
                 <body>
                     <div class="h">
+                        <div class="print-placeholder"></div>
                         <div class="h-text">
                             <h1>منطقة البحر الأحمر العسكرية</h1>
                             <h2>مستشفى السلاح الطبي ببورتسودان</h2>
@@ -132,9 +138,9 @@
                         <img src="icon-512.png" class="print-logo" alt="شعار الإدارة">
                     </div>
                     <div class="content">
-                        <p><b>كود المريض / الاسم:</b> ${p.patient_code}</p>
-                        <p><b>التشخيص المبدئي:</b> ${p.diagnosis}</p>
-                        <p><b>تاريخ التسجيل المعتمد:</b> ${new Date(p.created_at).toLocaleDateString('ar-EG')}</p>
+                        <p><b>كود المريض / الاسم:</b> \${p.patient_code}</p>
+                        <p><b>التشخيص المبدئي:</b> \${p.diagnosis}</p>
+                        <p><b>تاريخ التسجيل المعتمد:</b> \${new Date(p.created_at).toLocaleDateString('ar-EG')}</p>
                     </div>
                     <script>
                         window.onload = function() {
