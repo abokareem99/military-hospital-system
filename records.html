@@ -33,8 +33,29 @@
 
         table { width: 100%; max-width: 1000px; margin: auto; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         th { background: #1e3a8a; color: white; padding: 12px; text-align: right; }
+        
+        /* تفعيل مؤشر اليد عند تمرير الماوس على الصف ليعرف المستخدم أنه قابل للنقر */
+        tbody tr { cursor: pointer; transition: background-color 0.2s ease; }
+        tbody tr:hover { background-color: #f8fafc; }
+        
         td { padding: 12px; border-bottom: 1px solid #eee; }
-        .print-btn { background: #059669; color: white; border: none; padding: 5px 12px; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; font-size: 13px; }
+        
+        /* تأثير تلوين الصف بالكامل عند النقر عليه */
+        .row-selected { background-color: #fef3c7 !important; border-left: 5px solid #d97706; } 
+
+        /* أزرار العمليات */
+        .btn-action { color: white; border: none; padding: 5px 12px; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; font-size: 13px; font-weight: bold; margin-left: 5px; }
+        .print-btn { background: #059669; }
+        .edit-btn { background: #d97706; }
+        .delete-btn { background: #dc2626; }
+        
+        /* نافذة التعديل المنبثقة */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-box { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 500px; border-top: 6px solid #d97706; direction: rtl; max-height: 85vh; overflow-y: auto; }
+        .modal-box h3 { margin-top: 0; color: #1e3a8a; font-weight: 900; }
+        .modal-box label { display: block; margin: 12px 0 5px; font-weight: bold; font-size: 14px; text-align: right; color: #334155; }
+        .modal-box input, .modal-box select, .modal-box textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-family: 'Cairo'; font-size: 14px; }
+        
         @media print { .no-print { display: none; } }
     </style>
 </head>
@@ -43,6 +64,39 @@
         <h2 style="color:#1e3a8a">فتح سجل الحالات</h2>
         <input type="password" id="adminPass" style="width:100%; padding:10px; margin-bottom:15px; box-sizing: border-box; text-align: center;" placeholder="كلمة المرور">
         <button onclick="unlock()" style="width:100%; padding:10px; background:#1e3a8a; color:white; border:none; cursor:pointer; font-family:'Cairo'; font-weight:bold;">دخول</button>
+    </div>
+
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>✏️ تعديل ملف المريض الطبي</h3>
+            <input type="hidden" id="editId">
+            
+            <label>كود المريض / الاسم:</label>
+            <input type="text" id="editCode">
+            
+            <label>العمر:</label>
+            <input type="number" id="editAge">
+            
+            <label>رقم الهاتف:</label>
+            <input type="tel" id="editPhone">
+            
+            <label>التشخيص الحالي:</label>
+            <select id="editDiag">
+                <option>قلق عام</option><option>إكتئاب</option><option>اضطراب ثنائي القطب</option>
+                <option>فصام</option><option>اضطراب ما بعد الصدمة</option><option>أخرى</option>
+            </select>
+            
+            <label>الخطة العلاجية والأدوية الموصوفة:</label>
+            <textarea id="editTreatment" rows="4"></textarea>
+            
+            <label>توصيات طبية وموعد المراجعة:</label>
+            <input type="text" id="editNotes">
+            
+            <div style="margin-top: 25px; display: flex; gap: 10px;">
+                <button onclick="saveEdit()" style="flex: 1; padding: 12px; background: #059669; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;">💾 حفظ التعديلات</button>
+                <button onclick="closeEditModal()" style="padding: 12px 20px; background: #64748b; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-size: 15px;">إلغاء</button>
+            </div>
+        </div>
     </div>
 
     <div id="mainContent">
@@ -64,7 +118,7 @@
                     <th>الكود / الاسم</th>
                     <th>التشخيص</th>
                     <th>التاريخ</th>
-                    <th class="no-print">إجراءات</th>
+                    <th class="no-print" style="width: 250px; text-align: center;">إجراءات</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -78,6 +132,8 @@
         const S_URL = 'https://kqauubmsyrvsqtcqjfch.supabase.co';
         const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYXV1Ym1zeXJ2c3F0Y3FqZmNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NDI3NDMsImV4cCI6MjA5MzUxODc0M30.jDJb85oG4PZlwo7hwzsNtBbn9TqjQDxjPedxu4wApCc';
         const _supabase = supabase.createClient(S_URL, S_KEY);
+
+        let activeHighlightedRowId = null;
 
         function unlock() {
             if(document.getElementById('adminPass').value === "suha2026") {
@@ -93,22 +149,103 @@
                 const tbody = document.getElementById('tableBody');
                 tbody.innerHTML = '';
                 data.forEach(p => {
-                    tbody.innerHTML += `<tr>
+                    // تم إضافة حدث onclick المباشر على علامة الصف <tr> لتلوينه عند الضغط في أي مكان بداخله
+                    tbody.innerHTML += `<tr id="row-${p.id}" onclick="toggleRowHighlight(${p.id})">
                         <td><b>${p.patient_code}</b></td>
                         <td>${p.diagnosis}</td>
                         <td>${p.created_at ? new Date(p.created_at).toLocaleDateString('ar-EG') : ''}</td>
-                        <td class="no-print">
-                            <button class="print-btn" onclick='printReport(${JSON.stringify(p)})'>🖨️ طباعة التقرير</button>
+                        <td class="no-print" style="text-align: center;" onclick="event.stopPropagation();">
+                            <button class="btn-action print-btn" onclick='printReport(${JSON.stringify(p)})'>🖨️ طباعة</button>
+                            <button class="btn-action edit-btn" onclick='openEditModal(${JSON.stringify(p)})'>✏️ تعديل</button>
+                            <button class="btn-action delete-btn" onclick='deletePatient(${p.id})'>❌ حذف</button>
                         </td>
                     </tr>`;
                 });
             }
         }
 
+        // دالة التلوين عند الضغط المباشر على أي مكان بالصف
+        function toggleRowHighlight(rowId) {
+            clearRowHighlight(); // مسح التلوين القديم
+            const selectedRow = document.getElementById(`row-${rowId}`);
+            if (selectedRow) {
+                selectedRow.classList.add('row-selected');
+                activeHighlightedRowId = rowId;
+            }
+        }
+
+        // إزالة التلوين
+        function clearRowHighlight() {
+            if (activeHighlightedRowId) {
+                const targetRow = document.getElementById(`row-${activeHighlightedRowId}`);
+                if (targetRow) {
+                    targetRow.classList.remove('row-selected');
+                }
+                activeHighlightedRowId = null;
+            }
+        }
+
+        // تشغيل وضع التعديل وتعبئة الخانات
+        function openEditModal(p) {
+            document.getElementById('editId').value = p.id;
+            document.getElementById('editCode').value = p.patient_code;
+            document.getElementById('editAge').value = p.age || '';
+            document.getElementById('editPhone').value = p.phone || '';
+            document.getElementById('editDiag').value = p.diagnosis;
+            document.getElementById('editTreatment').value = p.treatment || '';
+            document.getElementById('editNotes').value = p.notes || '';
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            clearRowHighlight(); // مسح التلوين بعد الانتهاء أو الإلغاء
+        }
+
+        // تحديث قاعدة البيانات على Supabase
+        async function saveEdit() {
+            const id = document.getElementById('editId').value;
+            const code = document.getElementById('editCode').value;
+            const age = document.getElementById('editAge').value;
+            const phone = document.getElementById('editPhone').value;
+            const diag = document.getElementById('editDiag').value;
+            const treatment = document.getElementById('editTreatment').value;
+            const notes = document.getElementById('editNotes').value;
+
+            if(!code) { alert("كود المريض أو الاسم مطلوب لإتمام العملية!"); return; }
+
+            const { error } = await _supabase.from('psychiatry_patients').update({
+                patient_code: code,
+                age: age ? parseInt(age) : null,
+                phone: phone,
+                diagnosis: diag,
+                treatment: treatment,
+                notes: notes
+            }).eq('id', id);
+
+            if(error) {
+                alert("فشل تحديث البيانات في السيرفر: " + error.message);
+            } else {
+                alert("تم تحديث الملف الطبي للمريض بنجاح.");
+                closeEditModal();
+                loadData();
+            }
+        }
+
+        // مسح حالة مريض نهائياً
+        async function deletePatient(id) {
+            if (confirm("⚠️ هل أنت متأكد من مسح ملف هذا المريض نهائياً من قاعدة البيانات؟")) {
+                const { error } = await _supabase.from('psychiatry_patients').delete().eq('id', id);
+                if (error) {
+                    alert("تعذر حذف السجل: " + error.message);
+                } else {
+                    loadData();
+                }
+            }
+        }
+
         function printReport(p) {
             const win = window.open('', '_blank');
-            
-            // تهيئة بيانات العسكري أو المدني للعرض الذكي في الطباعة
             const secondaryInfoLabel = p.type === 'مدني' ? 'العنوان / السكن:' : 'الوحدة العسكرية والرتبة:';
             const secondaryInfoValue = p.type === 'مدني' ? (p.addr || 'غير محدد') : (p.unit || 'غير محدد');
 
