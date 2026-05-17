@@ -34,14 +34,14 @@
         table { width: 100%; max-width: 1000px; margin: auto; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         th { background: #1e3a8a; color: white; padding: 12px; text-align: right; }
         
-        /* تفعيل مؤشر اليد عند تمرير الماوس على الصف ليعرف المستخدم أنه قابل للنقر */
         tbody tr { cursor: pointer; transition: background-color 0.2s ease; }
         tbody tr:hover { background-color: #f8fafc; }
         
         td { padding: 12px; border-bottom: 1px solid #eee; }
         
-        /* تأثير تلوين الصف بالكامل عند النقر عليه */
+        /* تأثيرات تلوين الصفوف الذكية */
         .row-selected { background-color: #fef3c7 !important; border-left: 5px solid #d97706; } 
+        .row-delete-active { background-color: #fee2e2 !important; border-left: 5px solid #dc2626; }
 
         /* أزرار العمليات */
         .btn-action { color: white; border: none; padding: 5px 12px; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; font-size: 13px; font-weight: bold; margin-left: 5px; }
@@ -49,13 +49,23 @@
         .edit-btn { background: #d97706; }
         .delete-btn { background: #dc2626; }
         
-        /* نافذة التعديل المنبثقة */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; }
-        .modal-box { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 500px; border-top: 6px solid #d97706; direction: rtl; max-height: 85vh; overflow-y: auto; }
+        /* نوافذ منبثقة */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .modal-box { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 500px; border-top: 6px solid #d97706; direction: rtl; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); }
+        
+        /* مخصص لنافذة الحذف الاحترافية */
+        .modal-box.delete-type { border-top: 6px solid #dc2626; text-align: center; }
+        .delete-icon-animated { font-size: 50px; margin-bottom: 10px; display: inline-block; animation: shake 0.5s ease infinite alternate; }
+        
         .modal-box h3 { margin-top: 0; color: #1e3a8a; font-weight: 900; }
         .modal-box label { display: block; margin: 12px 0 5px; font-weight: bold; font-size: 14px; text-align: right; color: #334155; }
         .modal-box input, .modal-box select, .modal-box textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-family: 'Cairo'; font-size: 14px; }
         
+        @keyframes shake {
+            0% { transform: rotate(-5deg); }
+            100% { transform: rotate(5deg); }
+        }
+
         @media print { .no-print { display: none; } }
     </style>
 </head>
@@ -95,6 +105,22 @@
             <div style="margin-top: 25px; display: flex; gap: 10px;">
                 <button onclick="saveEdit()" style="flex: 1; padding: 12px; background: #059669; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;">💾 حفظ التعديلات</button>
                 <button onclick="closeEditModal()" style="padding: 12px 20px; background: #64748b; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-size: 15px;">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal-box delete-type">
+            <span class="delete-icon-animated">⚠️</span>
+            <h3 style="color: #dc2626; margin-bottom: 10px;">تأكيد حذف السجل</h3>
+            <p style="color: #475569; font-size: 15px; margin-bottom: 25px;">
+                هل أنت متأكد من مسح ملف المريض (<b id="deleteTargetName"></b>) نهائياً من منظومة قاعدة البيانات؟ هذه الخطوة لا يمكن التراجع عنها.
+            </p>
+            <input type="hidden" id="deleteId">
+            
+            <div style="display: flex; gap: 10px;">
+                <button onclick="confirmDelete()" style="flex: 1; padding: 12px; background: #dc2626; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 15px;">🗑️ نعم، احذف الملف</button>
+                <button onclick="closeDeleteModal()" style="padding: 12px 20px; background: #64748b; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-size: 15px;">إلغاء</button>
             </div>
         </div>
     </div>
@@ -149,44 +175,46 @@
                 const tbody = document.getElementById('tableBody');
                 tbody.innerHTML = '';
                 data.forEach(p => {
-                    // تم إضافة حدث onclick المباشر على علامة الصف <tr> لتلوينه عند الضغط في أي مكان بداخله
-                    tbody.innerHTML += `<tr id="row-${p.id}" onclick="toggleRowHighlight(${p.id})">
+                    tbody.innerHTML += `<tr id="row-${p.id}" onclick="toggleRowHighlight(${p.id}, 'select')">
                         <td><b>${p.patient_code}</b></td>
                         <td>${p.diagnosis}</td>
                         <td>${p.created_at ? new Date(p.created_at).toLocaleDateString('ar-EG') : ''}</td>
                         <td class="no-print" style="text-align: center;" onclick="event.stopPropagation();">
                             <button class="btn-action print-btn" onclick='printReport(${JSON.stringify(p)})'>🖨️ طباعة</button>
                             <button class="btn-action edit-btn" onclick='openEditModal(${JSON.stringify(p)})'>✏️ تعديل</button>
-                            <button class="btn-action delete-btn" onclick='deletePatient(${p.id})'>❌ حذف</button>
+                            <button class="btn-action delete-btn" onclick='openDeleteModal(${p.id}, "${p.patient_code}")'>❌ حذف</button>
                         </td>
                     </tr>`;
                 });
             }
         }
 
-        // دالة التلوين عند الضغط المباشر على أي مكان بالصف
-        function toggleRowHighlight(rowId) {
-            clearRowHighlight(); // مسح التلوين القديم
+        // تحسين دالة التلوين لتدعم حالات الاختيار العادي أو التحضير للحذف
+        function toggleRowHighlight(rowId, mode) {
+            clearRowHighlight(); 
             const selectedRow = document.getElementById(`row-${rowId}`);
             if (selectedRow) {
-                selectedRow.classList.add('row-selected');
+                if (mode === 'delete') {
+                    selectedRow.classList.add('row-delete-active');
+                } else {
+                    selectedRow.classList.add('row-selected');
+                }
                 activeHighlightedRowId = rowId;
             }
         }
 
-        // إزالة التلوين
         function clearRowHighlight() {
             if (activeHighlightedRowId) {
                 const targetRow = document.getElementById(`row-${activeHighlightedRowId}`);
                 if (targetRow) {
-                    targetRow.classList.remove('row-selected');
+                    targetRow.classList.remove('row-selected', 'row-delete-active');
                 }
                 activeHighlightedRowId = null;
             }
         }
 
-        // تشغيل وضع التعديل وتعبئة الخانات
         function openEditModal(p) {
+            toggleRowHighlight(p.id, 'select');
             document.getElementById('editId').value = p.id;
             document.getElementById('editCode').value = p.patient_code;
             document.getElementById('editAge').value = p.age || '';
@@ -199,10 +227,9 @@
 
         function closeEditModal() {
             document.getElementById('editModal').style.display = 'none';
-            clearRowHighlight(); // مسح التلوين بعد الانتهاء أو الإلغاء
+            clearRowHighlight();
         }
 
-        // تحديث قاعدة البيانات على Supabase
         async function saveEdit() {
             const id = document.getElementById('editId').value;
             const code = document.getElementById('editCode').value;
@@ -226,21 +253,36 @@
             if(error) {
                 alert("فشل تحديث البيانات في السيرفر: " + error.message);
             } else {
-                alert("تم تحديث الملف الطبي للمريض بنجاح.");
                 closeEditModal();
                 loadData();
             }
         }
 
-        // مسح حالة مريض نهائياً
-        async function deletePatient(id) {
-            if (confirm("⚠️ هل أنت متأكد من مسح ملف هذا المريض نهائياً من قاعدة البيانات؟")) {
-                const { error } = await _supabase.from('psychiatry_patients').delete().eq('id', id);
-                if (error) {
-                    alert("تعذر حذف السجل: " + error.message);
-                } else {
-                    loadData();
-                }
+        // تشغيل واجهة الحذف المخصصة
+        function openDeleteModal(id, code) {
+            toggleRowHighlight(id, 'delete'); // تلوين الصف بالأحمر فوراً عند الرغبة بالحذف
+            document.getElementById('deleteId').value = id;
+            document.getElementById('deleteTargetName').innerText = code;
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+            clearRowHighlight();
+        }
+
+        // تنفيذ عملية الحذف بعد تأكيد الواجهة المخصصة
+        async function confirmDelete() {
+            const id = document.getElementById('deleteId').value;
+            const { error } = await _supabase.from('psychiatry_patients').delete().eq('id', id);
+            
+            if (error) {
+                alert("تعذر حذف السجل: " + error.message);
+                closeDeleteModal();
+            } else {
+                document.getElementById('deleteModal').style.display = 'none';
+                activeHighlightedRowId = null; // مسح السجل من الذاكرة المؤقتة للتلوين
+                loadData();
             }
         }
 
@@ -265,12 +307,9 @@
                         .print-logo { width: 85px; height: 85px; object-fit: contain; }
                         
                         .section-title { background: #f1f5f9; padding: 6px 12px; font-weight: bold; color: #1e3a8a; border-right: 4px solid #d4af37; margin-top: 25px; font-size: 16px; }
-                        
                         .grid-info { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
                         .info-item { font-size: 15px; line-height: 1.6; border-bottom: 1px dashed #cbd5e1; padding-bottom: 6px; }
-                        
                         .medical-box { border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-top: 15px; font-size: 15px; background: #fafafa; white-space: pre-line; line-height: 1.6; }
-                        
                         .footer-signature { margin-top: 50px; display: flex; justify-content: space-between; padding: 0 40px; font-weight: bold; font-size: 14px; }
                     </style>
                 </head>
