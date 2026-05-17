@@ -11,7 +11,6 @@
         #lockScreen { background: white; padding: 40px; border-radius: 20px; width: 320px; margin: 100px auto; text-align: center; }
         #mainContent { display: none; padding: 20px; background: #f1f5f9; min-height: 100vh; }
         
-        /* تنسيق الهيدر المطور: توسيط النص والشعار على الشمال */
         .page-header { 
             display: flex; 
             align-items: center; 
@@ -25,7 +24,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
-        .header-placeholder { width: 90px; } /* موازن وهمي لضمان بقاء النص في المنتصف تماماً */
+        .header-placeholder { width: 90px; }
         .header-logo { width: 90px; height: 90px; object-fit: contain; order: 2; }
         .header-text { flex-grow: 1; text-align: center; order: 1; }
         .page-header h1 { margin: 0 0 5px 0; color: #1e3a8a; font-size: 26px; font-weight: 900; }
@@ -62,7 +61,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>الكود</th>
+                    <th>الكود / الاسم</th>
                     <th>التشخيص</th>
                     <th>التاريخ</th>
                     <th class="no-print">إجراءات</th>
@@ -97,9 +96,9 @@
                     tbody.innerHTML += `<tr>
                         <td><b>${p.patient_code}</b></td>
                         <td>${p.diagnosis}</td>
-                        <td>${new Date(p.created_at).toLocaleDateString('ar-EG')}</td>
+                        <td>${p.created_at ? new Date(p.created_at).toLocaleDateString('ar-EG') : ''}</td>
                         <td class="no-print">
-                            <button class="print-btn" onclick='printReport(${JSON.stringify(p)})'>🖨️ طباعة</button>
+                            <button class="print-btn" onclick='printReport(${JSON.stringify(p)})'>🖨️ طباعة التقرير</button>
                         </td>
                     </tr>`;
                 });
@@ -108,23 +107,34 @@
 
         function printReport(p) {
             const win = window.open('', '_blank');
+            
+            // تهيئة بيانات العسكري أو المدني للعرض الذكي في الطباعة
+            const secondaryInfoLabel = p.type === 'مدني' ? 'العنوان / السكن:' : 'الوحدة العسكرية والرتبة:';
+            const secondaryInfoValue = p.type === 'مدني' ? (p.addr || 'غير محدد') : (p.unit || 'غير محدد');
+
             win.document.write(`
                 <html dir="rtl">
                 <head>
-                    <title>طباعة تقرير</title>
+                    <title>تقرير طبي - ${p.patient_code}</title>
                     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
                     <style>
-                        body { font-family: 'Cairo', sans-serif; padding: 40px; }
-                        .h { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 15px; align-items: center; }
+                        body { font-family: 'Cairo', sans-serif; padding: 30px; color: #1e293b; }
+                        .h { display: flex; justify-content: space-between; border-bottom: 3px solid #1e3a8a; padding-bottom: 15px; align-items: center; }
                         .print-placeholder { width: 85px; }
                         .h-text { flex-grow: 1; text-align: center; }
                         .h-text h1 { margin: 0 0 5px 0; font-size: 24px; font-weight: 900; color: #1e3a8a; }
                         .h-text h2 { margin: 0 0 5px 0; font-size: 19px; font-weight: 700; color: #334155; }
                         .h-text h3 { margin: 0; font-size: 15px; font-weight: 700; color: #b45309; }
                         .print-logo { width: 85px; height: 85px; object-fit: contain; }
-                        .content { margin-top: 30px; border: 1px solid #ccc; padding: 20px; border-radius: 8px; font-size: 16px; }
-                        .content p { margin: 12px 0; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; }
-                        .content p:last-child { border: none; }
+                        
+                        .section-title { background: #f1f5f9; padding: 6px 12px; font-weight: bold; color: #1e3a8a; border-right: 4px solid #d4af37; margin-top: 25px; font-size: 16px; }
+                        
+                        .grid-info { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+                        .info-item { font-size: 15px; line-height: 1.6; border-bottom: 1px dashed #cbd5e1; padding-bottom: 6px; }
+                        
+                        .medical-box { border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-top: 15px; font-size: 15px; background: #fafafa; white-space: pre-line; line-height: 1.6; }
+                        
+                        .footer-signature { margin-top: 50px; display: flex; justify-content: space-between; padding: 0 40px; font-weight: bold; font-size: 14px; }
                     </style>
                 </head>
                 <body>
@@ -133,18 +143,37 @@
                         <div class="h-text">
                             <h1>منطقة البحر الأحمر العسكرية</h1>
                             <h2>مستشفى السلاح الطبي ببورتسودان</h2>
-                            <h3>سجل نظام المتابعة الرقمي</h3>
+                            <h3>نظام المتابعة الرقمي - عيادة النفسية</h3>
                         </div>
-                        <img src="icon-512.png" class="print-logo" alt="شعار الإدارة">
+                        <img src="icon-512.png" class="print-logo" alt="شعار الإدارة" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3063/3063176.png'">
                     </div>
-                    <div class="content">
-                        <p><b>كود المريض / الاسم:</b> ${p.patient_code}</p>
-                        <p><b>التشخيص المبدئي:</b> ${p.diagnosis}</p>
-                        <p><b>تاريخ التسجيل المعتمد:</b> ${new Date(p.created_at).toLocaleDateString('ar-EG')}</p>
+
+                    <div class="section-title">بيانات المريض الأساسية</div>
+                    <div class="grid-info">
+                        <div class="info-item"><b>كود المريض / الاسم:</b> ${p.patient_code}</div>
+                        <div class="info-item"><b>الفئة:</b> ${p.type || 'غير محدد'}</div>
+                        <div class="info-item"><b>العمر:</b> ${p.age ? p.age + ' سنة' : 'غير محدد'}</div>
+                        <div class="info-item"><b>رقم الهاتف:</b> ${p.phone || 'غير محدد'}</div>
+                        <div class="info-item" style="grid-column: span 2;"><b>${secondaryInfoLabel}</b> ${secondaryInfoValue}</div>
                     </div>
+
+                    <div class="section-title">التشخيص الحالي</div>
+                    <div class="medical-box"><b>${p.diagnosis}</b></div>
+
+                    <div class="section-title">الخطة العلاجية والأدوية الموصوفة</div>
+                    <div class="medical-box">${p.treatment || 'لا توجد أدوية مسجلة حالياً.'}</div>
+
+                    <div class="section-title">التوصيات الطبية والملاحظات</div>
+                    <div class="medical-box">${p.notes || 'متابعة حسب التوجيهات الطبية.'}</div>
+
+                    <div class="footer-signature">
+                        <div>تاريخ التقرير: ${p.created_at ? new Date(p.created_at).toLocaleDateString('ar-EG') : new Date().toLocaleDateString('ar-EG')}</div>
+                        <div>توقيع وختم الطبيب المعالج: ............................</div>
+                    </div>
+
                     <script>
                         window.onload = function() {
-                            setTimeout(function() { window.print(); }, 300);
+                            setTimeout(function() { window.print(); }, 400);
                         };
                     <\/script>
                 </body>
