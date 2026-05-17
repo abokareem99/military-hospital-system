@@ -21,7 +21,7 @@
         }
 
         .container { 
-            width: 95%; max-width: 500px; background: #fff; border-radius: 25px; 
+            width: 95%; max-width: 550px; background: #fff; border-radius: 25px; 
             overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5); 
             border-top: 8px solid var(--gold); margin: 20px auto;
         }
@@ -42,6 +42,8 @@
         }
 
         .form-body { padding: 25px; }
+        .section-title { margin: 20px 0 10px; color: var(--gold-dark); font-weight: 800; font-size: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 5px; }
+        
         label { display: block; margin-bottom: 5px; color: #1e293b; font-weight: 700; font-size: 14px; }
         
         input[type="text"], input[type="tel"], input[type="number"], select, textarea { 
@@ -97,17 +99,17 @@
     <div class="container">
         <div class="header">
             <img src="icon-192.png" alt="شعار" class="logo-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3063/3063176.png'">
-            
             <div class="header-text">
                 <h1>مستشفى السلاح الطبي ببورتسودان</h1>
                 <h2>قسم النفسية</h2>
                 <div class="badge-system">نظام المتابعة الرقمي</div>
             </div>
-            
             <img src="icon-512.png" alt="شعار" class="logo-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3063/3063176.png'">
         </div>
 
         <div class="form-body">
+            <div class="section-title">👤 البيانات الأساسية والإدارية</div>
+            
             <label>نوع المريض:</label>
             <div class="radio-group">
                 <label><input type="radio" name="pType" value="عسكري" checked onclick="toggleType()"> عسكري</label>
@@ -126,6 +128,14 @@
             <div id="unitDiv">
                 <label>الوحدة العسكرية والرتبة:</label>
                 <input type="text" id="pUnit" placeholder="اسم الوحدة / الرتبة">
+                
+                <label>الوضع الإداري الحالي:</label>
+                <select id="pAdminStatus">
+                    <option value="في الخدمة">في الخدمة حالياً</option>
+                    <option value="إجازة مرضية">في إجازة مرضية</option>
+                    <option value="إيقاف مؤقت">إيقاف مؤقت عن العمل</option>
+                    <option value="متقاعد">متقاعد / محارب قديم</option>
+                </select>
             </div>
 
             <div id="addrDiv" style="display:none;">
@@ -133,17 +143,40 @@
                 <input type="text" id="pAddr" placeholder="السكن / الحي">
             </div>
 
+            <div class="section-title">🩺 التقييم والتاريخ الطبي النفسي</div>
+
             <label>الحالة التشخيصية:</label>
             <select id="pDiag">
                 <option>قلق عام</option><option>إكتئاب</option><option>اضطراب ثنائي القطب</option>
                 <option>فصام</option><option>اضطراب ما بعد الصدمة</option><option>أخرى</option>
             </select>
 
+            <label>درجة خطورة الحالة:</label>
+            <select id="pRiskLevel">
+                <option value="منخفضة">منخفضة (مستقرة)</option>
+                <option value="متوسطة">متوسطة (تحتاج متابعة)</option>
+                <option value="عالية">عالية (حرج / حماية مشددة)</option>
+            </select>
+
+            <label>تاريخ التعرض لصدمات أو ظروف قتالية:</label>
+            <textarea id="pTrauma" placeholder="اكتب تفاصيل الصدمة أو الحالة العملياتية إن وجدت..."></textarea>
+
+            <label>التاريخ المرضي السابق والأمراض المزمنة:</label>
+            <input type="text" id="pPastMedical" placeholder="مثال: ضغط، سكري، إصابات رأس سابقة، لا يوجد">
+
+            <label>التاريخ العائلي للأمراض النفسية:</label>
+            <input type="text" id="pFamilyHistory" placeholder="هل توجد حالات مشابهة في العائلة؟">
+
+            <div class="section-title">💊 الخطة العلاجية والتوصيات</div>
+
             <label>الخطة العلاجية والأدوية الموصوفة:</label>
             <textarea id="pTreatment" placeholder="اكتب العلاج الموصوف والجرعات بالتفصيل..."></textarea>
 
             <label>توصيات طبية وموعد المراجعة:</label>
             <input type="text" id="pNotes" placeholder="مثال: مراجعة بعد أسبوعين / راحة طبية">
+
+            <label>اسم الطبيب المعالج:</label>
+            <input type="text" id="pDoctor" placeholder="اسم الطبيب أو الأخصائي">
 
             <button class="btn-save" onclick="saveData()">حفظ في المنظومة</button>
 
@@ -176,10 +209,18 @@
             const pDiag = document.getElementById('pDiag').value;
             const pTreatment = document.getElementById('pTreatment').value;
             const pNotes = document.getElementById('pNotes').value;
+            
+            // الحقول الجديدة
+            const pAdminStatus = document.getElementById('pAdminStatus').value;
+            const pRiskLevel = document.getElementById('pRiskLevel').value;
+            const pTrauma = document.getElementById('pTrauma').value;
+            const pPastMedical = document.getElementById('pPastMedical').value;
+            const pFamilyHistory = document.getElementById('pFamilyHistory').value;
+            const pDoctor = document.getElementById('pDoctor').value;
 
             if(!pCode) { alert("من فضلك أدخل كود المريض أو الاسم أولاً"); return; }
 
-            // إرسال البيانات مباشرة إلى جدول السيرفر بـ Supabase
+            // إرسال البيانات إلى جدول السيرفر بـ Supabase يتضمن الحقول الجديدة
             const { error } = await _supabase.from('psychiatry_patients').insert([{
                 patient_code: pCode,
                 diagnosis: pDiag,
@@ -189,7 +230,13 @@
                 unit: pType === 'عسكري' ? pUnit : null,
                 addr: pType === 'مدني' ? pAddr : null,
                 treatment: pTreatment,
-                notes: pNotes
+                notes: pNotes,
+                administrative_status: pType === 'عسكري' ? pAdminStatus : null,
+                risk_level: pRiskLevel,
+                trauma_history: pTrauma,
+                past_medical_history: pPastMedical,
+                family_history: pFamilyHistory,
+                doctor_name: pDoctor
             }]);
 
             if (error) {
