@@ -13,7 +13,10 @@
             --deep-blue: #0f172a; 
             --medical-green: #14532d;
             --medical-green-hover: #166534;
-            --bg-body: #f8fafc; /* خلفية هادئة مريحة للعين للمنظومات */
+            --bg-body: #f8fafc; 
+            /* درجة اللون الأحمر المطلوبة (ليست غامقة وليست خفيفة) لتأمين أفضل تباين للنصوص البيضاء */
+            --custom-red: #c23b3b;
+            --custom-red-hover: #a82e2e;
         }
         
         * {
@@ -30,10 +33,9 @@
             flex-direction: column;
         }
 
-        /* حاوية تملأ الشاشة بالكامل مع حواف خفيفة */
         .container { 
             width: 100%; 
-            max-width: 100%; /* تملأ الصفحة */
+            max-width: 100%; 
             background: #fff; 
             min-height: 100vh;
             display: flex;
@@ -41,7 +43,6 @@
             box-shadow: none;
         }
 
-        /* الهيدر ممتد بالكامل */
         .header { 
             background: #1e293b; 
             padding: 15px 30px; 
@@ -61,16 +62,14 @@
             border-radius: 20px; font-size: 12px; font-weight: bold; margin-top: 8px; 
         }
 
-        /* جسم الاستمارة الممتد */
         .form-body { 
             padding: 30px; 
             flex-grow: 1;
-            max-width: 1400px; /* يعطي مساحة عرضية ممتازة ومريحة للعين في الشاشات الكبيرة */
+            max-width: 1400px; 
             width: 100%;
             margin: 0 auto;
         }
 
-        /* جعل الفروع والبيانات مقسمة إلى شبكة أعمدة متجاورة لتملأ الفراغ */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -78,7 +77,6 @@
             margin-bottom: 25px;
         }
 
-        /* جعل حقل الراديو وحقول معينة تأخذ مساحة كامل السطر إن لزم الأمر */
         .full-width {
             grid-column: 1 / -1;
         }
@@ -100,25 +98,37 @@
 
         label { display: block; margin-bottom: 8px; color: #1e293b; font-weight: 700; font-size: 14px; }
         
+        /* تطبيق اللون الأحمر المتوسط المريح على خلفية الحقول، وجعل الخط أبيض وواضح */
         input[type="text"], input[type="tel"], input[type="number"], select, textarea { 
             width: 100%; padding: 12px 15px; 
-            border: 2px solid #cbd5e1; 
+            border: 2px solid var(--custom-red); 
             border-radius: 8px; box-sizing: border-box; font-family: 'Cairo'; 
-            background: #ffffff; 
-            color: #1e293b; 
-            font-size: 15px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            background: var(--custom-red) !important; 
+            color: #ffffff !important; 
+            font-size: 16px; /* تكبير الخط قليلاً لزيادة وضوح الحروف رقمياً */
+            font-weight: bold;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
             transition: all 0.3s ease;
         }
 
         textarea { resize: vertical; min-height: 100px; }
-        input::placeholder, textarea::placeholder { color: #94a3b8; }
+        
+        /* لون النص المؤقت (Placeholder) داخل الحقل الأحمر ليصبح مقروءاً */
+        input::placeholder, textarea::placeholder { color: rgba(255, 255, 255, 0.75); }
 
+        /* تغيير الخلفية عند الوقوف والتركيز على الحقل لإعطاء طابع تفاعلي ممتاز */
         input:focus, select:focus, textarea:focus { 
-            border-color: var(--medical-green); 
-            background: #ffffff; 
-            box-shadow: 0 0 0 3px rgba(20, 83, 45, 0.15);
+            border-color: var(--gold); 
+            background: var(--custom-red-hover) !important; 
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
             outline: none;
+        }
+
+        /* تعديل المتصفحات لضمان بقاء لون النص الأبيض في الـ Select Option */
+        select option {
+            background: #fff;
+            color: #1e293b;
+            font-weight: normal;
         }
 
         .radio-group { 
@@ -126,9 +136,8 @@
             background: #f1f5f9; padding: 12px 20px; border-radius: 8px; 
             border: 1px solid #e2e8f0;
         }
-        .radio-group label { margin: 0; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .radio-group label { margin: 0; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #1e293b; }
 
-        /* منطقة الأزرار الإجرائية سفلية ممتدة */
         .actions-bar {
             grid-column: 1 / -1;
             display: flex;
@@ -263,7 +272,7 @@
 
                 <div class="form-control full-width">
                     <label>الخطة العلاجية والأدوية الموصوفة:</label>
-                    <textarea id="pTreatment" placeholder="اكتب العلاج الموصوف والجرعات بالتفصيل..."></textarea>
+                    <textarea id="pTreatment" placeholder="اكتب علاج الموصوف والجرعات بالتفصيل..."></textarea>
                 </div>
 
                 <div class="form-control">
